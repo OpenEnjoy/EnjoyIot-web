@@ -22,7 +22,7 @@ module.exports = defineConfig({
     'plugin:@typescript-eslint/recommended',
     'prettier',
     'plugin:prettier/recommended',
-    '@unocss'
+    // '@unocss'
   ],
   rules: {
     'vue/no-setup-props-destructure': 'off',
