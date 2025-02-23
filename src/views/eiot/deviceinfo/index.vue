@@ -804,12 +804,15 @@ const options = reactive({
         .title-l {
           display: flex;
           align-items: center;
-        }
-
-        .icon {
-          margin-right: 10px;
-          display: flex;
-          align-items: center;
+          flex: 1;
+          min-width: 0; // 添加这行
+          
+          // 添加这个样式块
+          > div:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
         }
       }
 
@@ -860,9 +863,10 @@ const options = reactive({
             display: inline-block;
             color: #0b1d30;
             flex: 1;
-            word-wrap: break-word; /* 在单词内换行 */
-            word-break: break-word; /* 允许在单词内换行 */
-            white-space: normal; /* 允许换行 */
+            overflow: hidden;      // 添加这行
+            text-overflow: ellipsis; // 添加这行
+            white-space: nowrap;   // 修改这行
+            max-width: 180px;      // 添加这行
 
             &.active {
               color: #0070ff;
