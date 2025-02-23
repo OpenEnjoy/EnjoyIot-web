@@ -72,11 +72,11 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1
       codemirror:
-        specifier: ^6.0.1
-        version: 6.0.1
+        specifier: ^5.65.18
+        version: 5.65.18
       codemirror-editor-vue3:
         specifier: ^2.8.0
-        version: 2.8.0(codemirror@6.0.1)(diff-match-patch@1.0.5)(vue@3.5.12(typescript@5.3.3))
+        version: 2.8.0(codemirror@5.65.18)(diff-match-patch@1.0.5)(vue@3.5.12(typescript@5.3.3))
       cropperjs:
         specifier: ^1.6.1
         version: 1.6.2
@@ -172,7 +172,7 @@ importers:
         version: 3.5.12(typescript@5.3.3)
       vue-codemirror:
         specifier: 6.1.1
-        version: 6.1.1(codemirror@6.0.1)(vue@3.5.12(typescript@5.3.3))
+        version: 6.1.1(codemirror@5.65.18)(vue@3.5.12(typescript@5.3.3))
       vue-dompurify-html:
         specifier: ^4.1.4
         version: 4.1.4(vue@3.5.12(typescript@5.3.3))
@@ -2773,8 +2773,8 @@ packages:
       '@codemirror/state': ^6.2.1
       '@codemirror/view': ^6.17.1
 
-  codemirror@6.0.1:
-    resolution: {integrity: sha512-J8j+nZ+CdWmIeFIGXEFbFPtpiYacFMDR8GlHK3IyHQJMCaVRfGx9NT+Hxivv1ckLWPvNdZqndbr/7lVhrf/Svg==}
+  codemirror@5.65.18:
+    resolution: {integrity: sha512-Gaz4gHnkbHMGgahNt3CA5HBk5lLQBqmD/pBgeB4kQU6OedZmqMBjlRF0LSrp2tJ4wlLNPm2FfaUd1pDy0mdlpA==}
 
   codemirror@6.65.7:
     resolution: {integrity: sha512-HcfnUFJwI2FvH73YWVbbMh7ObWxZiHIycEhv9ZEXy6e8ZKDjtZKbbYFUtsLN46HFXPvU5V2Uvc2d55Z//oFW5A==}
@@ -9050,9 +9050,9 @@ snapshots:
       estree-walker: 3.0.3
       periscopic: 3.1.0
 
-  codemirror-editor-vue3@2.8.0(codemirror@6.0.1)(diff-match-patch@1.0.5)(vue@3.5.12(typescript@5.3.3)):
+  codemirror-editor-vue3@2.8.0(codemirror@5.65.18)(diff-match-patch@1.0.5)(vue@3.5.12(typescript@5.3.3)):
     dependencies:
-      codemirror: 6.0.1
+      codemirror: 5.65.18
       diff-match-patch: 1.0.5
       vue: 3.5.12(typescript@5.3.3)
 
@@ -9062,15 +9062,7 @@ snapshots:
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.36.3
 
-  codemirror@6.0.1:
-    dependencies:
-      '@codemirror/autocomplete': 6.18.6
-      '@codemirror/commands': 6.8.0
-      '@codemirror/language': 6.10.8
-      '@codemirror/lint': 6.8.4
-      '@codemirror/search': 6.5.9
-      '@codemirror/state': 6.5.2
-      '@codemirror/view': 6.36.3
+  codemirror@5.65.18: {}
 
   codemirror@6.65.7: {}
 
@@ -12598,13 +12590,13 @@ snapshots:
       sass: 1.85.0
       terser: 5.39.0
 
-  vue-codemirror@6.1.1(codemirror@6.0.1)(vue@3.5.12(typescript@5.3.3)):
+  vue-codemirror@6.1.1(codemirror@5.65.18)(vue@3.5.12(typescript@5.3.3)):
     dependencies:
       '@codemirror/commands': 6.8.0
       '@codemirror/language': 6.10.8
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.36.3
-      codemirror: 6.0.1
+      codemirror: 5.65.18
       vue: 3.5.12(typescript@5.3.3)
 
   vue-demi@0.13.11(vue@3.5.12(typescript@5.3.3)):

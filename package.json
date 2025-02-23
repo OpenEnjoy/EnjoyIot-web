@@ -46,7 +46,7 @@
     "benz-amr-recorder": "^1.1.5",
     "bpmn-js-token-simulation": "^0.36.0",
     "camunda-bpmn-moddle": "^7.0.1",
-    "codemirror": "^6.0.1",
+    "codemirror": "^5.65.18",
     "codemirror-editor-vue3": "^2.8.0",
     "cropperjs": "^1.6.1",
     "crypto-js": "^4.2.0",
