@@ -8,17 +8,17 @@
       v-model:query="queryParams"
       :total="state.total"
       :loading="state.loading"
-      :tableProps=" {
+      :tableProps="{
         selection: true,
         viewBtn: true,
         delBtn: true,
         customTable: layoutType === 'card',
         menuSlot: true,
-        menuWidth: 200,
+        menuWidth: 200
       }"
       :fun-props="{
         exportBtn: true,
-        delBtn: false,
+        delBtn: false
       }"
       :addFunc="handleAdd"
       @del-fun="handleDelete"
@@ -31,16 +31,12 @@
             <div class="text-box">
               <div class="title flex align-center">
                 <div class="icon">
-                   <Icon icon="fa:cube" class="design-iconfont" />
+                  <Icon icon="fa:cube" class="design-iconfont" />
                 </div>
                 {{ item.name }}
               </div>
               <div class="text flex">
                 <div class="txt">
-                  <div class="txt-item">
-                    <div class="label">key</div>
-                    <div class="value active">{{ item.productKey }}</div>
-                  </div>
                   <div class="txt-item">
                     <div class="label">所属分类</div>
                     <div class="value active">{{ item.categoryName }}</div>
@@ -56,7 +52,6 @@
                       <span v-if="!item.transparent">否</span>
                     </div>
                   </div>
-
                 </div>
                 <div class="img">
                   <img :src="item.img || defaultImg" alt="" />
@@ -75,7 +70,7 @@
               <el-divider direction="vertical" />
               <el-popconfirm title="是否确认删除?" @confirm="handleDelete(item)">
                 <template #reference>
-                  <el-button type="danger" plain >
+                  <el-button type="danger" plain>
                     <Icon icon="ep:delete" />
                   </el-button>
                 </template>
@@ -110,16 +105,15 @@
 import defaultImg from '@/assets/imgs/eiot/pic_device.png'
 import download from '@/utils/download'
 import ObjectModel from './modules/objectModel.vue'
-import {ProductApi, ProductVO} from '@/api/eiot/product'
+import { ProductApi, ProductVO } from '@/api/eiot/product'
 import EiotProductForm from './EiotProductForm.vue'
-import {getIntDictOptions, DICT_TYPE, getDictOptions} from "@/utils/dict";
+import { getIntDictOptions, DICT_TYPE, getDictOptions } from '@/utils/dict'
 import { ThingModelApi, ThingModelVO } from '@/api/eiot/thingmodel'
-import ThingModelForm from "./ThingModelForm.vue"
-import {IColumn} from "@/components/common/types/tableCommon";
-
+import ThingModelForm from './ThingModelForm.vue'
+import { IColumn } from '@/components/common/types/tableCommon'
 
 /** 物联网产品 列表 */
-defineOptions({name: 'EiotProduct'})
+defineOptions({ name: 'EiotProduct' })
 const layoutType = ref('card')
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
@@ -128,7 +122,6 @@ const list = ref<ProductVO[]>([]) // 列表的数据
 
 /** 打开详情 */
 const { push } = useRouter()
-
 
 const queryParams = reactive({
   pageNo: 1,
@@ -166,17 +159,17 @@ const getList = async () => {
 const nodeTypeOptions = [
   {
     value: 0,
-    label: '网关设备',
+    label: '网关设备'
   },
   {
     value: 1,
-    label: '网关子设备',
+    label: '网关子设备'
   },
   {
     value: 2,
-    label: '直连设备',
+    label: '直连设备'
   },
-  {value: 3, label: '监控设备'},
+  { value: 3, label: '监控设备' }
 ]
 
 const column = ref<IColumn[]>([
@@ -185,7 +178,7 @@ const column = ref<IColumn[]>([
     key: 'productSecret',
     hide: true,
     addHide: true,
-    editDisabled: true,
+    editDisabled: true
   },
   {
     label: '产品Key',
@@ -193,13 +186,13 @@ const column = ref<IColumn[]>([
     search: true,
     editDisabled: true,
     addDisabled: false,
-    rules: [{ required: true, message: '产品Key不能为空' }],
+    rules: [{ required: true, message: '产品Key不能为空' }]
   },
   {
     label: '产品名称',
     key: 'name',
     search: true,
-    rules: [{ required: true, message: '产品名称不能为空' }],
+    rules: [{ required: true, message: '产品名称不能为空' }]
   },
   {
     label: '品类',
@@ -208,9 +201,9 @@ const column = ref<IColumn[]>([
     tableWidth: 80,
     componentProps: {
       labelAlias: 'name',
-      valueAlias: 'id',
+      valueAlias: 'id'
     },
-    rules: [{ required: true, message: '品类不能为空' }],
+    rules: [{ required: true, message: '品类不能为空' }]
   },
   {
     label: '节点类型',
@@ -218,8 +211,8 @@ const column = ref<IColumn[]>([
     type: 'radio',
     componentProps: {
       defaultValue: 0,
-      options: nodeTypeOptions,
-    },
+      options: nodeTypeOptions
+    }
   },
   {
     label: '设备协议',
@@ -228,7 +221,7 @@ const column = ref<IColumn[]>([
     tableWidth: 80,
     componentProps: {
       labelAlias: 'name',
-      valueAlias: 'id',
+      valueAlias: 'id'
     }
   },
   {
@@ -241,14 +234,14 @@ const column = ref<IColumn[]>([
       options: [
         {
           value: true,
-          label: '是',
+          label: '是'
         },
         {
           value: false,
-          label: '否',
-        },
-      ],
-    },
+          label: '否'
+        }
+      ]
+    }
   },
   {
     label: '保活时长(秒)',
@@ -256,7 +249,7 @@ const column = ref<IColumn[]>([
     type: 'number',
     search: false,
     tableWidth: 110,
-    rules: [{ required: true, message: '保活时长不能为空' }],
+    rules: [{ required: true, message: '保活时长不能为空' }]
   },
   {
     label: '设备定位',
@@ -268,13 +261,13 @@ const column = ref<IColumn[]>([
       options: [
         {
           value: true,
-          label: '开启',
+          label: '开启'
         },
         {
           value: false,
-          label: '关闭',
-        },
-      ],
+          label: '关闭'
+        }
+      ]
     },
     formWatch: (scope) => {
       scope.column.forEach((f: IColumn) => {
@@ -283,7 +276,7 @@ const column = ref<IColumn[]>([
         }
       })
       column.value = scope.column
-    },
+    }
   },
   {
     label: '定位方式',
@@ -296,22 +289,22 @@ const column = ref<IColumn[]>([
       options: [
         {
           value: 'manual',
-          label: '手动定位',
+          label: '手动定位'
         },
         {
           value: 'device',
-          label: '设备上报',
-        },
-      ],
-    },
+          label: '设备上报'
+        }
+      ]
+    }
   },
   {
     label: '产品图片',
     key: 'img',
     type: 'image',
     componentProps: {
-      uploadType: 'url',
-    },
+      uploadType: 'url'
+    }
   },
   {
     label: '创建时间',
@@ -319,10 +312,9 @@ const column = ref<IColumn[]>([
     type: 'date',
     tableWidth: 110,
     sortable: true,
-    formHide: true,
-  },
+    formHide: true
+  }
 ])
-
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -343,15 +335,19 @@ const openForm = (type: string, id?: number) => {
   formRef.value.open(type, id)
 }
 // 新增
-const handleAdd = ()=>{
-  push({ path: `/eiot/products/productEdit/0`, state: {
+const handleAdd = () => {
+  push({
+    path: `/eiot/products/productEdit/0`,
+    state: {
       type: 'create'
     }
   })
 }
 // 查看
-const handleView = (item)=>{
-  push({ path: `/eiot/products/productEdit/${item.id}`, state: {
+const handleView = (item) => {
+  push({
+    path: `/eiot/products/productEdit/${item.id}`,
+    state: {
       data: toRaw(item),
       type: 'view'
     }
@@ -359,7 +355,7 @@ const handleView = (item)=>{
 }
 
 // 编辑
-const handleUpdate = (item)=>{
+const handleUpdate = (item) => {
   push({
     path: `/eiot/products/productEdit/${item.id}`,
     state: {
@@ -367,10 +363,7 @@ const handleUpdate = (item)=>{
       type: 'edit'
     }
   })
-
 }
-
-
 
 /** 删除按钮操作 */
 const handleDelete = async (item) => {
@@ -400,12 +393,9 @@ const handleExport = async () => {
   }
 }
 
-
-
 const getNodeTypeNmae = (type) => {
   return nodeTypeOptions.find((f) => f.value === type)?.label || ''
 }
-
 
 const objectModelRef = ref()
 const openObjectModel = (row: any) => {
