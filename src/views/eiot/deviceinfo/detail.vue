@@ -299,9 +299,9 @@
         </el-table>
       </el-tab-pane>
 
-      <el-tab-pane label="设备配置" name="config" :disabled="inAdd">
-        <DeviceConfig v-if="state.activeName === 'config'" :deviceInfo="state" />
-      </el-tab-pane>
+<!--      <el-tab-pane label="设备配置" name="config" :disabled="inAdd">-->
+<!--        <DeviceConfig v-if="state.activeName === 'config'" :deviceInfo="state" />-->
+<!--      </el-tab-pane>-->
 
       <el-tab-pane label="模拟设备" name="simulator" :disabled="inAdd">
         <DeviceSimulator
@@ -311,9 +311,9 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd">
-        <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />
-      </el-tab-pane>
+<!--      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd">-->
+<!--        <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />-->
+<!--      </el-tab-pane>-->
     </el-tabs>
 
     <el-dialog
