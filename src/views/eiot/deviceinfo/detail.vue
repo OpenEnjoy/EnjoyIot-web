@@ -465,7 +465,6 @@ const router = useRouter()
 const { id } = route.params
 const handleType = window.history.state.type
 const productListRef = ref()
-const disabledView = handleType == 'view' ? true : false
 const inAdd = handleType == 'add' ? true : false
 const inEdit = handleType == 'edit' || inAdd ? true : false
 
@@ -596,10 +595,7 @@ const getProductData = (product) => {
   state.nodeType = product.nodeType
   state.product = product
 }
-const getSipIDData = (devsipid) => {
-  state.deviceDetail.dn = devsipid
-  state.deviceDetail.serialNo = devsipid
-}
+
 const generateSerialNo = () => {
   if (!state.deviceDetail.productKey) {
     message.alert(t('输入产品KEY'))
@@ -650,12 +646,7 @@ const onSave = async () => {
   }
 }
 
-const handleSizeChange = (val: number) => {
-  console.log(`${val} items per page`)
-}
-const handleCurrentChange = (val: number) => {
-  console.log(`current page: ${val}`)
-}
+
 
 const getdata = () => {
   // 新增
