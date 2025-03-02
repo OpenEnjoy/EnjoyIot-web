@@ -367,6 +367,7 @@ const importProductObj = ref()
 
 const getProductData = (product) => {
   productObj.value = product
+  state.query.productKey = product?.productKey
 }
 
 const getImportProductData = (product) => {
