@@ -48,11 +48,7 @@
       <el-table v-loading="loading" :data="list">
         <el-table-column label="组件编号" align="center" prop="id" />
         <el-table-column label="组件名称" align="center" prop="name" />
-        <el-table-column label="组件类型" align="center" prop="type">
-          <template #default="scope">
-            <dict-tag :type="DICT_TYPE.COMPONENT_TYPE" :value="scope.row.type" />
-          </template>
-        </el-table-column>
+        <el-table-column label="组件类型" align="center" prop="type" />
         <el-table-column label="状态" align="center" prop="status">
           <template #default="scope">
             <el-switch
@@ -63,11 +59,7 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" align="center" prop="createTime" width="180">
-          <template #default="scope">
-            <span>{{ dateFormatter(scope.row.createTime) }}</span>
-          </template>
-        </el-table-column>
+        <el-table-column label="创建时间" align="center" prop="createTime"  :formatter="dateFormatter" width="180"/>
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
           <template #default="scope">
             <el-button
