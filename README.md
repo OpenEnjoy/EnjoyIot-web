@@ -56,6 +56,19 @@ npm run dev
 [![乐联开源/enjoy-iot](https://gitee.com/open-enjoy/enjoy-iot/widgets/widget_card.svg?colors=393222,ebdfc1,fffae5,d8ca9f,393222,a28b40)](https://gitee.com/open-enjoy/enjoy-iot)
 
 
+### 文档
+
+在线文档：[https://y5yrmmjjns.feishu.cn/wiki/M7Fgw1DX2iCbKNk5ucDcZ5mhnfd](https://y5yrmmjjns.feishu.cn/wiki/M7Fgw1DX2iCbKNk5ucDcZ5mhnfd)
+
+演示系统：见微信群公告
+
+### 商用&授权
+
+开源版：可用于个人学习、研究使用，用于商业用途请联系作者申请授权后可免费使用，但仍需保留开源署名等信息。
+
+商业版：筹划中。。
+
+
 ## 联系我们
 
  **添加微信，备注：进群**
