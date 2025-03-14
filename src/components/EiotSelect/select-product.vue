@@ -92,6 +92,7 @@ const handleMultiple = () => {
 // 清空
 const onClear = () => {
   emits('update:id', '')
+  emits('update:pk', '')
   dialogState.data = {}
 }
 const dialogState = reactive({
