@@ -4,7 +4,7 @@
           <el-col :span="12">
             <el-form :inline="true" :model="state.query" class="user-search">
               <el-form-item label="设备">
-                <el-input v-model="state.query.keyword"  size="small" placeholder="输入设备DN" />
+                <el-input v-model="state.query.dn"  size="small" placeholder="输入设备DN" />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" icon="Search" size="small" @click="search">搜索</el-button>

@@ -10,7 +10,7 @@
                   <el-radio label="device" size="large">设备监听</el-radio>
                 </el-radio-group>
                 <div class="item">
-                  <select-product v-model:pk="item.pk" @on-select="(row) => handleSelectProduct(row)" />
+                  <select-product v-model:pk="item.pk" @on-select="(row) => handleSelectProduct(row, item)" />
                 </div>
                 <div class="item" v-if="item.pk">
                   <select-device v-model:dn="item.dn" placeholder="默认全部设备" :product-pk="item.pk || ''" @on-select="handleEmits" />
@@ -115,9 +115,13 @@ const activeName = ref<number[]>(arr)
 const list = ref<any[]>(props.listeners || [])
 
 // 选择产品-调用物模型
-const handleSelectProduct = (product) => {
+const handleSelectProduct = (product, item) => {
+  console.log('product', product)
   if (!product.productKey) return
+  console.log('item', item)
+  item.dn = ''
   getProductObjectModel(product.productKey)
+
 }
 
 const getProductObjectModel = (pk) => {

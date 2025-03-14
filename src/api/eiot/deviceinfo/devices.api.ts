@@ -47,7 +47,7 @@ export interface IDeviceGroupVo {
 export const getDevicesList = async (data) => {
   return await request.get({
     url: Api.devicesList,
-    data,
+    params: data,
   })
 }
 
