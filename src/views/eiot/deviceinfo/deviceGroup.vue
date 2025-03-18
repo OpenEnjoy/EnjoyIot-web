@@ -137,8 +137,10 @@ const onSave = ({type, data, cancel}: any) => {
 // 删除
 const onDelete = async (row: any) => {
   state.loading = true
-  let ids = row.id
-  await deleteDeviceGroup(ids)
+  let data = {
+    id : row.id
+  }
+  await deleteDeviceGroup(data)
   ElMessage.success('删除成功!')
   state.loading = false
   getData()
