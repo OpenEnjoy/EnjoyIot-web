@@ -7,4 +7,3 @@ pnpm-debug
 auto-*.d.ts
 .idea
 .history
-src/views/eiot/category/index2.vue
