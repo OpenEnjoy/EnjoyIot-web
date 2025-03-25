@@ -47,7 +47,7 @@ export interface IDeviceGroupVo {
 export const getDevicesList = async (data) => {
   return await request.get({
     url: Api.devicesList,
-    data,
+    params: data,
   })
 }
 
@@ -189,7 +189,7 @@ export const getGroupTemplate= async ()=>{
   })
 }
 // 删除设备分组
-export const deleteDeviceGroup = async (data: string) => {
+export const deleteDeviceGroup = async (data) => {
   return await request.post({
     url: Api.deviceGroupsDel,
     data,
