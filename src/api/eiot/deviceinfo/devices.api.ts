@@ -18,7 +18,7 @@ enum Api {
   propertySet = '/eiot/device/service/property/set',
   propertyGet = '/eiot/device/service/property/get',
   deviceLogs = '/eiot/device/deviceLogs/list',
-  serviceInvoke = '/eiot/device-ctrl/service/invoke',
+  serviceInvoke = '/eiot/device/service/invoke',
   childrenDeviceList = '/eiot/device/children/list',
   childrenDevice = '',
   getParentDevices = '/eiot/device/getParentDevices',
