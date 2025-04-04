@@ -140,7 +140,7 @@ const groupOptions = [
     uid: 'fa1c5eaa-de6e-48b6-805e-8f091c7bb831',
     remark: '2223333',
     deviceQty: 17,
-    createAt: 1659872082792,
+    createTime: 1659872082792,
   },
   {
     id: 'g2',
@@ -148,7 +148,7 @@ const groupOptions = [
     uid: 'fa1c5eaa-de6e-48b6-805e-8f091c7bb831',
     remark: '222',
     deviceQty: 21,
-    createAt: 1659872082803,
+    createTime: 1659872082803,
   },
   {
     id: 'g1',
@@ -156,7 +156,7 @@ const groupOptions = [
     uid: 'fa1c5eaa-de6e-48b6-805e-8f091c7bb831',
     remark: '1111',
     deviceQty: 10,
-    createAt: 1659872082805,
+    createTime: 1659872082805,
   },
 ]
 const column = ref<IColumn[]>([
@@ -236,7 +236,7 @@ const column = ref<IColumn[]>([
   },
   {
     label: '创建时间',
-    key: 'createAt',
+    key: 'createTime',
     tableWidth: 180,
     type: 'date',
     sortable: true,
