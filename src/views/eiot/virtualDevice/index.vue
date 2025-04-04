@@ -140,7 +140,7 @@ const column = ref<IColumn[]>([{
   formItemSlot: true,
 }, {
   label: '创建时间',
-  key: 'createAt',
+  key: 'createTime',
   type: 'date',
   sortable: true,
   formHide: true,

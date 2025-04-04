@@ -36,7 +36,7 @@ interface IPage {
 
 // 脚本详情
 export interface IConverterScript {
-  createAt: number
+  createTime: number
   desc: string
   id: string
   name: string

@@ -12,7 +12,7 @@ export interface IChannelTemplateVo {
   channelConfigId: number
   title: string
   content: string
-  createAt: number
+  createTime: number
 }
 interface IPage {
   pageNum?: number
