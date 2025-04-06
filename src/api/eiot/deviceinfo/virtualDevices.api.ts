@@ -16,7 +16,7 @@ enum Api {
 }
 
 export interface IVirtualDevicesVO {
-  createAt: number
+  createTime: number
   devices: any[]
   id: string
   name: string

@@ -16,21 +16,21 @@ export interface IChannelConfigsVO {
   channelId: number
   title: string
   param: string
-  createAt: number
+  createTime: number
 }
 export interface IChannelsVO {
   id?: number
   code: string
   title: string
   icon: string
-  createAt: number
+  createTime: number
 }
 export interface INotifyMessagesVO {
   id?: number
   content: string
   messageType: string
   status: boolean
-  createAt: number
+  createTime: number
   updateAt: number
 }
 

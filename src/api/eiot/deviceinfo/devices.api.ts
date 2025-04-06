@@ -35,7 +35,7 @@ enum Api {
 
 export interface IDeviceGroupVo {
   id: number | string
-  createAt: number
+  createTime: number
   deviceQty: number
   name: string
   remark: string

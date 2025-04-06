@@ -78,7 +78,7 @@ const columns = ref<IColumn[]>([
   },
   {
     label: '创建时间',
-    key: 'createAt',
+    key: 'createTime',
     type: 'date',
     sortable: true,
     tableWidth: 180,
@@ -104,7 +104,7 @@ const data = ref([
     property: null,
     tag: {},
     group: {},
-    createAt: 1646572345167,
+    createTime: 1646572345167,
   },
   {
     id: '16465723448670abc1230000200000115',
@@ -125,7 +125,7 @@ const data = ref([
     property: null,
     tag: {},
     group: {},
-    createAt: 1646572344867,
+    createTime: 1646572344867,
   },
 ])
 
