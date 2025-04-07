@@ -444,6 +444,7 @@ import productList from './product-list.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
 import { ref } from 'vue'
+import {ElMessage} from "element-plus";
 
 const { t } = useI18n() // 国际化
 const route = useRoute()

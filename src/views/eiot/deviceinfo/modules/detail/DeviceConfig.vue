@@ -100,19 +100,11 @@ const saveConfig = () => {
 
 const sendConfig = () => {
   sendDeviceConfig(props.deviceInfo.deviceId).then((res) => {
-    if (res.code === 200) {
       ElNotification({
         title: '成功',
         message: '下发成功',
         type: 'success'
       })
-    } else {
-      ElNotification({
-        title: '提示',
-        message: res.message,
-        type: 'error'
-      })
-    }
   })
 }
 

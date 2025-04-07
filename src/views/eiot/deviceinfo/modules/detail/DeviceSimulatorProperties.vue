@@ -22,7 +22,8 @@
 </template>
 
 <script>
-import {deviceSimulateSend} from "@/api/eiot/deviceinfo/devices.api";
+import {deviceSimulateSend, propertyGet} from "@/api/eiot/deviceinfo/devices.api";
+import {ElMessage} from "element-plus";
 
 export default {
   name: 'deviceSimulatorProperties',
@@ -54,18 +55,11 @@ export default {
         deviceId: this.deviceId,
         args: prop,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
-      })
+        })
     },
 
     sendPropertiesGet(row) {
@@ -75,18 +69,11 @@ export default {
         deviceId: this.deviceId,
         propertyNames: prop,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
-      })
+        } )
     },
     sendAllPropertiesGet() {
       let prop = {}
@@ -100,18 +87,13 @@ export default {
         deviceId: this.deviceId,
         args: prop,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
+
         }
-      })
+      )
     },
     sendSimpleThingModelMsg(fun) {
       let data = {}
@@ -119,10 +101,13 @@ export default {
         let val = fun.value
         switch (fun.dataTypeName) {
           case 'int32':
-          if(val<fun.raw.dataType.specs.min||val>fun.raw.dataType.specs.max){
+            val = parseInt(val, 10)
+            if (isNaN(val) || val < Number(fun.raw.dataType.specs.min) || val > Number(fun.raw.dataType.specs.max)) {
+
             ElMessage({
                 type: 'info',
-                message: '数据类型错误',
+                 message: `请输入有效的整数（范围 ${fun.raw.dataType.specs.min} 到 ${fun.raw.dataType.specs.max}）`
+
               })
               return
             }
@@ -133,13 +118,20 @@ export default {
           if (!(val in fun.raw.dataType.specs)) {
             ElMessage({
               type: 'info',
-              message: '数据类型错误',
+              message: `请输入有效的枚举值（可选值: ${Object.keys(fun.raw.dataType.specs).join(', ')})`
             })
             return
           }
             break
           case 'float':
             val = parseFloat(val)
+            if (isNaN(val)) {
+              ElMessage({
+                type: 'error',
+                message: '请输入有效的浮点数'
+              })
+              return
+            }
             break
         }
         data[fun.identifier] = val
@@ -155,17 +147,10 @@ export default {
         identifier: fun.type == 'property' ? 'report' : fun.identifier,
         data: data,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
       })
     },
     sendThingModelMsg() {
@@ -195,7 +180,7 @@ export default {
       if(flag){
         ElMessage({
               type: 'info',
-              message: '数据类型错误',
+              message: '数据类型错误111',
             })
         return
       }
@@ -207,17 +192,10 @@ export default {
         identifier: 'report',
         data: data,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
       })
     },
   },

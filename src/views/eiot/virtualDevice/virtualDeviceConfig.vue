@@ -93,13 +93,11 @@ const run = (id) => {
 
 const setState = (id: string, state: any) => {
   setVirtualDeviceState({ id: id, state: state }).then((res) => {
-    if ( res.code == 200 ) {
       ElNotification.success({
         title: '成功',
         message: '状态切换成功',
       })
       data.value.state = state
-    }
   })
 }
 </script>
