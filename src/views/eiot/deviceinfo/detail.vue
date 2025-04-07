@@ -937,20 +937,13 @@ const submitServiceForm = () => {
     deviceId: state.deviceId,
     service: form.identifier,
     args: param
-  }).then((res) => {
-    if (res.code === 200) {
+  }).then(() => {
       state.serviceFormVisible = false
       ElMessage({
         type: 'info',
         message: '操作成功'
       })
-    } else {
-      ElMessage({
-        type: 'error',
-        message: res.message
-      })
-    }
-  })
+    } )
 }
 const sendDeviceMsg = (fun) => {
   //发送模拟设备消息
