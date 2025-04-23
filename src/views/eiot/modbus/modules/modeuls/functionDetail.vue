@@ -86,7 +86,7 @@ const openDialog = (row?: any, props?: any) => {
       regAddr: '',
       regNum: '1',
       processor: '',
-      sort: '0',
+      sort: 'AB',
       raw: {
         name: '',
         identifier: '',
@@ -95,7 +95,7 @@ const openDialog = (row?: any, props?: any) => {
         regAddr: '',
         regNum: '1',
         processor: '',
-        sort: '0',
+        sort: 'AB',
         type: 'property',
         dataType: {
           specs: {},
