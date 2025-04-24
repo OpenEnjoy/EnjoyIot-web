@@ -104,9 +104,15 @@ export default defineComponent({
       this.showDeviceSelector = !this.showDeviceSelector
     },
     hadnleSelectDevice(device) {
+      console.log('device', device)
       if (!device.productKey) return
       this.selectedDn = device.dn
       this.selectedPk = device.productKey
+      console.log('this.selectedP', this.selectedPk + '/' + (this.selectedDn || '#'))
+      console.log('this.servicesRef', this.servicesRef)
+      this.servicesRef.map(m => {
+        m.device = this.selectedPk + '/' + (this.selectedDn || '#')
+      })
       this.getProductObjectModel(device.productKey)
     },
     getProductObjectModel(pk) {

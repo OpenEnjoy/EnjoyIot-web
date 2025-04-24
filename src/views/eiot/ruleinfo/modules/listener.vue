@@ -173,21 +173,21 @@ const initThingModel = (pk, res) => {
     name: '属性上报',
   })
   res?.model?.events &&
-    res.model.events.forEach((s) => {
-      items.push({
-        type: 'event',
-        identifier: s.identifier,
-        name: s.name,
-      })
+  res.model.events.forEach((s) => {
+    items.push({
+      type: 'event',
+      identifier: s.identifier,
+      name: s.name,
     })
+  })
   res?.model?.services &&
-    res.model.services.forEach((s) => {
-      items.push({
-        type: 'service',
-        identifier: s.identifier,
-        name: s.name,
-      })
+  res.model.services.forEach((s) => {
+    items.push({
+      type: 'service',
+      identifier: s.identifier,
+      name: s.name,
     })
+  })
 
   state.properties.push({
     identifier: '*',
