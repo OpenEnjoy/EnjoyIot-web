@@ -166,6 +166,7 @@ const column = ref<IColumn[]>([
     type: 'select',
     search: !props.productPk,
     componentProps: {
+      style: "width: 150px",
       labelAlias: 'name',
       valueAlias: 'productKey',
       options: productOptions.value,
