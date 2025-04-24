@@ -68,6 +68,8 @@ const column = ref<IColumn[]>([{
     labelAlias: 'name',
     valueAlias: 'productKey',
     options: productOptions,
+    style: "width: 150px",
+
   },
   rules: [{ required: true, message: '产品名称不能为空' }],
 }, {
@@ -116,6 +118,7 @@ const column = ref<IColumn[]>([{
   slot: true,
   componentProps: {
     defaultValue: '',
+    style: "width: 150px",
     options: [
       {
         value: 'running',

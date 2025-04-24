@@ -135,6 +135,7 @@ const column = ref<IColumn[]>([
     type: 'select',
     tableWidth: 150,
     componentProps: {
+      style: "width: 150px",
       labelAlias: 'name',
       valueAlias: 'id',
       options: cateOptions.value,
