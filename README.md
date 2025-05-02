@@ -66,7 +66,7 @@ npm run dev
 
 开源版：可用于个人学习、研究使用，用于商业用途请联系作者申请授权后可免费使用，但仍需保留开源署名等信息。
 
-商业版：筹划中。。
+商业版：https://y5yrmmjjns.feishu.cn/wiki/FlxmwXzQJiEKCJkGuIhcLsyjnwh?fromScene=spaceOverview 详情联系商务
 
 
 ## 联系我们
