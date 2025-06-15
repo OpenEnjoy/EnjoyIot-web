@@ -56,20 +56,14 @@
         style="padding-right: 10px; padding-left: 10px; margin-top: -10px; margin-bottom: -10px"
       >
         <el-form-item>
-          <el-row justify="space-between" style="width: 100%">
+          <el-row  style="width: 100%">
             <el-col :span="6">
               <el-checkbox v-model="loginData.loginForm.rememberMe">
                 {{ t('login.remember') }}
               </el-checkbox>
             </el-col>
-            <el-col :offset="6" :span="12">
-              <!-- <el-link
-                style="float: right"
-                type="primary"
-                @click="setLoginState(LoginStateEnum.RESET_PASSWORD)"
-              >
-                {{ t('login.forgetPassword') }}
-              </el-link> -->
+            <el-col  :span="6">
+                <el-button @click="showWechatQRCode" type="text">获取账号</el-button>
             </el-col>
           </el-row>
         </el-form-item>
@@ -95,6 +89,12 @@
       />
     </el-row>
   </el-form>
+  <el-dialog v-model="wechatDialogVisible" width="30%">
+    <div class="flex justify-center">
+      <img src="@/assets/imgs/wechat_qr_code.jpg" alt="公众号二维码" style="width: 200px; height: 200px;" />
+    </div>
+    <p class="text-center mt-2">请扫码关注公众号，获取测试账号与密码</p>
+  </el-dialog>
 </template>
 <script lang="ts" setup>
 import { ElLoading } from 'element-plus'
@@ -126,7 +126,13 @@ const verify = ref()
 const captchaType = ref('blockPuzzle') // blockPuzzle 滑块 clickWord 点击文字
 
 const getShow = computed(() => unref(getLoginState) === LoginStateEnum.LOGIN)
+// 控制弹窗显示
+const wechatDialogVisible = ref(false)
 
+// 弹出公众号二维码
+const showWechatQRCode = () => {
+  wechatDialogVisible.value = true
+}
 const LoginRules = {
   tenantName: [required],
   username: [required],
