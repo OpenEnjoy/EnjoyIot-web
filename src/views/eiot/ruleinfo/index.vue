@@ -14,15 +14,15 @@
       @del-fun="handleDelete"
     >
       <template #state="scope">
-        <el-switch
+        <!-- <el-switch
           v-model="scope.row.state"
           :active-value="1"
           :inactive-value="0"
           disabled
           style="--el-switch-on-color: #029D40; --el-switch-off-color: #DFDFDF"
-        />
-        <!-- <div v-if="scope.row.state === 'stopped'" style="color: red;">已停止</div>
-        <div v-if="scope.row.state === 'running'" style="color: green;">运行中</div> -->
+        /> -->
+        <el-tag v-if="scope.row.state === 0" type="danger">已停止</el-tag>
+        <el-tag v-if="scope.row.state === 1" type="success">运行中</el-tag>
       </template>
       <template #log="scope">
         <el-button size="small" type="primary" @click="handleViewLog(scope.row.id)">查看</el-button>
@@ -42,7 +42,23 @@
       <template #customFormItem="{row}">
         <el-tabs v-model="activeName" type="border-card">
           <el-tab-pane label="监听器" :name="1">
-            <listener v-if="activeName === 1" v-model:listeners="row.listeners" />
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item label="静默周期(秒)" prop="lsnSilentSec">
+                  <el-input v-model="row.lsnSilentSec" type="number" placeholder="请输入静默时间(秒)" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="执行条件" prop="lsnCond">
+                  <el-select v-model="row.lsnCond" placeholder="请选择执行条件">
+                    <el-option label="任意满足" :value="1" />
+                    <el-option label="全部满足" :value="2" />
+                    <el-option label="不满足" :value="3" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <listener  ref="listenerRef"  v-if="activeName === 1" v-model:listeners="row.listeners" />
           </el-tab-pane>
           <el-tab-pane label="过滤器" :name="2">
             <filtera v-if="activeName === 2" v-model:filters="row.filters" />
@@ -65,7 +81,7 @@ import Filtera from './modules/filtera.vue'
 import Output from './modules/output.vue'
 import LogDialog from './modules/logDialog.vue'
 import YtCrud from '@/components/common/yt-crud.vue'
-
+const listenerRef = ref()
 // 查看日志
 const logDialogRef = ref()
 const handleViewLog = (id: string) => {
@@ -147,6 +163,10 @@ const state = reactive({
 const data = ref([])
 // 保存数据
 const onSave = ({ type, data, cancel }: any) => {
+  // 验证监听器配置
+  if (listenerRef.value && !listenerRef.value.validateAllListeners()) {
+    return
+  }
   state.loading = true
   const obj = toRaw(data)
   console.log('save:', obj)

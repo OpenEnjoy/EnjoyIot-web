@@ -48,12 +48,27 @@
                             </el-select>
                           </el-col>
                           <el-col :span="6">
-                            <el-select v-model="param.comparator">
-                              <el-option v-for="cp in comparators" :label="cp.name" :value="cp.value" :key="cp.value" />
+                            <el-select v-model="param.comparator" @change="onComparatorChange(param)">
+                              <el-option
+                                v-for="cp in comparators"
+                                :label="cp.name"
+                                :value="cp.value"
+                                :key="cp.value"
+                              >
+                                <span>{{ cp.name }}</span>
+                                <span v-if="cp.description" style="color: #999; font-size: 12px; margin-left: 8px;">
+                                  {{ cp.description }}
+                                </span>
+                              </el-option>
                             </el-select>
                           </el-col>
                           <el-col :span="5">
-                            <el-input v-model="param.value" auto-complete="off" />
+                            <el-input
+                              v-model="param.value"
+                              auto-complete="off"
+                              :placeholder="getValuePlaceholder(param?.comparator)"
+                              @blur="validateParamValue(param)"
+                            />
                           </el-col>
                           <el-col :span="1">
                             <el-button
@@ -65,6 +80,15 @@
                             >
                               <Icon icon="ep:delete" />
                             </el-button>
+                          </el-col>
+                        </el-row>
+                        <!-- 表达式预览 -->
+                        <el-row class="param-item" v-if="param?.comparator && param?.value">
+                          <el-col :span="24">
+                            <div class="expression-preview">
+                              <Icon icon="ep:view" style="margin-right: 4px;" />
+                              <span>{{ previewExpression(param) }}</span>
+                            </div>
                           </el-col>
                         </el-row>
                       </el-col>
@@ -278,39 +302,71 @@ const handleAdd = () => {
 const removeListener = (index: number) => {
   list.value.splice(index, 1)
 }
-// 条件
+/**
+ * 条件比较器配置 - 与Expression.java中的表达式处理保持一致
+ *
+ * 对应Expression.java中的eval方法支持的操作符:
+ * - == : 字符串相等比较 (value.equals(triggerValue))
+ * - != : 字符串不等比较 (!value.equals(triggerValue))
+ * - > : 数值大于比较 (Double.parseDouble(value) > Double.parseDouble(triggerValue))
+ * - < : 数值小于比较 (Double.parseDouble(value) < Double.parseDouble(triggerValue))
+ * - >= : 数值大于等于比较 (Double.parseDouble(value) >= Double.parseDouble(triggerValue))
+ * - <= : 数值小于等于比较 (Double.parseDouble(value) <= Double.parseDouble(triggerValue))
+ * - between : 数值范围内比较，格式: "最小值-最大值" (min <= value <= max)
+ * - notBetween : 数值范围外比较，格式: "最小值-最大值" (value <= min || value >= max)
+ * - contain : 字符串包含比较 (value.contains(triggerValue))
+ * - notContain : 字符串不包含比较 (!value.contains(triggerValue))
+ */
 const comparators = ref([
-  {
-    name: '大于',
-    value: '>',
-  },
   {
     name: '等于',
     value: '==',
-  },
-  {
-    name: '小于',
-    value: '<',
+    description: '字符串相等比较',
   },
   {
     name: '不等于',
     value: '!=',
+    description: '字符串不等比较',
+  },
+  {
+    name: '大于',
+    value: '>',
+    description: '数值大于比较',
+  },
+  {
+    name: '小于',
+    value: '<',
+    description: '数值小于比较',
+  },
+  {
+    name: '大于等于',
+    value: '>=',
+    description: '数值大于等于比较',
+  },
+  {
+    name: '小于等于',
+    value: '<=',
+    description: '数值小于等于比较',
+  },
+  {
+    name: '在..之间',
+    value: 'between',
+    description: '数值范围内，格式: 最小值-最大值 (如: 10-20)',
+  },
+  {
+    name: '不在..之间',
+    value: 'notBetween',
+    description: '数值范围外，格式: 最小值-最大值 (如: 10-20)',
   },
   {
     name: '包含',
-    value: 'in',
+    value: 'contain',
+    description: '字符串包含比较',
   },
   {
     name: '不包含',
-    value: 'notin',
-  },
-  {
-    name: '相似',
-    value: 'like',
-  },
-  {
-    name: '任意',
-    value: '*',
+    value: 'notContain',
+    description: '字符串不包含比较',
   },
 ])
 
@@ -326,10 +382,132 @@ const conditionChange = (cond, list, e) => {
   }
 }
 
+// 获取参数值输入提示
+const getValuePlaceholder = (comparator) => {
+  if (!comparator) return '请输入值'
+
+  switch (comparator) {
+    case 'between':
+    case 'notBetween':
+      return '请输入范围值，格式: 最小值-最大值 (如: 10-20)'
+    case 'contain':
+    case 'notContain':
+      return '请输入要匹配的文本内容'
+    case '>':
+    case '<':
+    case '>=':
+    case '<=':
+      return '请输入数值'
+    case '==':
+    case '!=':
+      return '请输入比较值'
+    default:
+      return '请输入值'
+  }
+}
+
+// 比较器变化处理
+const onComparatorChange = (param) => {
+  if (!param) return
+  // 清空之前的值，避免格式不匹配
+  param.value = ''
+}
+
+// 验证参数值
+const validateParamValue = (param) => {
+  if (!param || !param.value || !param.comparator) return true
+
+  const { comparator, value } = param
+
+  // 验证between和notBetween格式
+  if (comparator === 'between' || comparator === 'notBetween') {
+    const parts = value.split('-')
+    if (parts.length !== 2) {
+      ElMessage.warning('范围值格式错误，请使用格式: 最小值-最大值 (如: 10-20)')
+      return false
+    }
+
+    const min = parseFloat(parts[0])
+    const max = parseFloat(parts[1])
+
+    if (isNaN(min) || isNaN(max)) {
+      ElMessage.warning('范围值必须是数字')
+      return false
+    }
+
+    if (min >= max) {
+      ElMessage.warning('最小值必须小于最大值')
+      return false
+    }
+  }
+
+  // 验证数值类型操作符
+  if (['>', '<', '>=', '<='].includes(comparator)) {
+    if (isNaN(parseFloat(value))) {
+      ElMessage.warning('该操作符需要输入数值')
+      return false
+    }
+  }
+
+  return true
+}
+
+// 验证所有监听器配置
+const validateAllListeners = () => {
+  for (const listener of list.value) {
+    if (!listener.conditions || listener.conditions.length === 0) {
+      ElMessage.error('请至少配置一个监听条件')
+      return false
+    }
+
+    for (const condition of listener.conditions) {
+      if (!condition.identifier) {
+        ElMessage.error('请选择监听条件类型')
+        return false
+      }
+
+      if (!condition.identifier.endsWith(':*') && (!condition.parameters || condition.parameters.length === 0)) {
+        ElMessage.error('请至少配置一个参数条件')
+        return false
+      }
+
+      if (condition.parameters) {
+        for (const param of condition.parameters) {
+          if (!param.comparator) {
+            ElMessage.error('请选择比较操作符')
+            return false
+          }
+
+          if (!param.value) {
+            ElMessage.error('请输入比较值')
+            return false
+          }
+
+          // 调用单个参数验证
+          if (!validateParamValue(param)) {
+            return false
+          }
+        }
+      }
+    }
+  }
+
+  return true
+}
+
+// 暴露验证方法给父组件
+defineExpose({
+  validateAllListeners
+})
+
 // 新增条件
 const handleAddCondition = (item: any) => {
   if (!item.conditions) item.conditions = []
-  item.conditions.push({})
+  item.conditions.push({
+    identifier: '',
+    type: '',
+    parameters: []
+  })
 }
 // 删除条件
 const handleRemoveCondition = (item: any, index: number) => {
@@ -339,11 +517,63 @@ const handleRemoveCondition = (item: any, index: number) => {
 // 新增参数
 const addParmeter = (cond: any) => {
   if (!cond.parameters) cond.parameters = []
-  cond.parameters.push({})
+  cond.parameters.push({
+    identifier: '',
+    comparator: '',
+    value: ''
+  })
 }
 // 删除参数
 const removeParmeter = (index: number, cond: any) => {
   cond.parameters.splice(index, 1)
+}
+
+// 表达式预览和测试功能
+const previewExpression = (param) => {
+  if (!param || !param.comparator || !param.value) {
+    return '请完善条件配置'
+  }
+
+  const { comparator, value, identifier } = param
+  const field = identifier || '设备属性'
+
+  try {
+    switch (comparator) {
+      case '==':
+        return `当 ${field} 等于 "${value}" 时触发`
+      case '!=':
+        return `当 ${field} 不等于 "${value}" 时触发`
+      case '>':
+        return `当 ${field} 大于 ${value} 时触发`
+      case '<':
+        return `当 ${field} 小于 ${value} 时触发`
+      case '>=':
+        return `当 ${field} 大于等于 ${value} 时触发`
+      case '<=':
+        return `当 ${field} 小于等于 ${value} 时触发`
+      case 'between':
+        if (value && value.includes('-')) {
+          const [min, max] = value.split('-')
+          return `当 ${field} 在 ${min} 到 ${max} 之间时触发`
+        }
+        return `当 ${field} 在指定范围内时触发`
+      case 'notBetween':
+        if (value && value.includes('-')) {
+          const [min2, max2] = value.split('-')
+          return `当 ${field} 不在 ${min2} 到 ${max2} 之间时触发`
+        }
+        return `当 ${field} 不在指定范围内时触发`
+      case 'contain':
+        return `当 ${field} 包含 "${value}" 时触发`
+      case 'notContain':
+        return `当 ${field} 不包含 "${value}" 时触发`
+      default:
+        return '未知条件类型'
+    }
+  } catch (error) {
+    console.error('表达式预览错误:', error)
+    return '表达式格式错误'
+  }
 }
 
 onUnmounted(() => {
@@ -404,6 +634,22 @@ onUnmounted(() => {
         // }
       }
     }
+  }
+}
+
+.expression-preview {
+  background-color: #f0f9ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+
+  .el-icon {
+    color: #3b82f6;
   }
 }
 </style>
