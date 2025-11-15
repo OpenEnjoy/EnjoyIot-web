@@ -106,6 +106,19 @@ const state = reactive({
         label: '短信接收人',
         value: 'phoneNumbers',
       }]
+    },
+    {
+      code: 'VMS',
+      list: [{
+        label: 'AccessKeyId',
+        value: 'accessKeyId',
+      }, {
+        label: 'AccessKeySecret',
+        value: 'accessKeySecret',
+      }, {
+        label: '语音接收人',
+        value: 'phoneNumbers',
+      }]
     }
   ],
   channelCode: '',
