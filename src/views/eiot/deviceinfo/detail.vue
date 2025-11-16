@@ -299,9 +299,9 @@
         />
       </el-tab-pane>
 
-      <!--      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd">-->
-      <!--        <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />-->
-      <!--      </el-tab-pane>-->
+      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd">
+        <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />
+      </el-tab-pane>
     </el-tabs>
 
     <el-dialog
@@ -443,6 +443,8 @@ import PropertyChart from './modules/PropertyChart.vue'
 import productList from './product-list.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
+import DeviceConfig from "./modules/detail/DeviceConfig.vue";
+import SubEquipment from "./modules/detail/subEquipment.vue";
 import { ref } from 'vue'
 
 const { t } = useI18n() // 国际化

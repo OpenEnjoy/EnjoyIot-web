@@ -1,13 +1,26 @@
 <template>
   <div>
     <el-table :data="list" border style="width: 95%">
-      <el-table-column label="序号" align="center" width="180" />
-      <el-table-column label="设备ID" align="center" width="80" />
-      <el-table-column label="产品" align="center" width="180" />
-      <el-table-column label="设备DN" align="center" />
-      <el-table-column label="状态" align="center" />
-      <el-table-column label="创建时间" align="center" />
-      <el-table-column label="操作" align="center" />
+      <el-table-column label="序号" type="index" align="center" width="80" />
+      <el-table-column label="设备名称" property="name" align="center" width="180" />
+      <el-table-column label="产品" property="productName" align="center" width="180" />
+      <el-table-column label="设备DN" property="dn" align="center" />
+      <el-table-column label="状态" align="center">
+        <template v-slot="scope">
+          <el-tag v-if="scope.row.state === 1" type="success" size="small">在线</el-tag>
+          <el-tag v-else type="danger" size="small">离线</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column :formatter="dateFormatter"  label="创建时间" prop="createTime" align="center"/>
+      <el-table-column label="操作" align="center">
+        <template v-slot="scope">
+          <el-popconfirm title="确认要解除与网关的关联吗？" @confirm="handleDelete(scope.row)">
+            <template #reference>
+              <el-button link type="danger" icon="Delete">解绑</el-button>
+            </template>
+          </el-popconfirm>
+        </template>
+      </el-table-column>>
     </el-table>
     <div class="mt-[20px] w-400px ml-auto">
       <el-pagination
@@ -26,7 +39,9 @@
 <script setup lang="ts">
 
 
-import {getChildrenDeviceList} from "@/api/eiot/deviceinfo/devices.api";
+import {getChildrenDeviceList, unbindDevice} from "@/api/eiot/deviceinfo/devices.api";
+import {dateFormatter} from "@/utils/formatTime";
+import {ElPopconfirm} from "element-plus";
 
 const props = defineProps({
   deviceInfo: {
@@ -46,11 +61,19 @@ const getList = () => {
   getChildrenDeviceList({
     pageNo: page.pageNo,
     pageSize: page.pageSize,
-    coverData: props.deviceInfo.deviceId,
+    parentId: props.deviceInfo.deviceId,
   }).then((res) => {
-    list.value = res.data
+    list.value = res.list
     console.log(res)
   })
+}
+
+const handleDelete = async (row: any) => {
+  await unbindDevice({
+    id: row.id
+  })
+  ElMessage.success('解绑成功!')
+  getList()
 }
 
 onMounted(() => {

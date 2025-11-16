@@ -52,7 +52,7 @@ export const getDevicesList = async (data) => {
 }
 
 // 解绑
-export const unbindDevice = async (data: string) => {
+export const unbindDevice = async (data) => {
   return await request.post({
     url: Api.devicesUnbind,
 
