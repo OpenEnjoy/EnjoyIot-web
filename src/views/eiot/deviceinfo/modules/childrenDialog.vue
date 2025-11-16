@@ -92,7 +92,7 @@ const data = ref([
 const handleDelete = async (row: any) => {
   state.loading = true
   await unbindDevice({
-    id: row.id
+    idList: [row.id],
   })
   ElMessage.success('解绑成功!')
   state.loading = false

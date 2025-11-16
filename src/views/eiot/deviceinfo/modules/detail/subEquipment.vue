@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div style="margin-bottom: 10px;">
+      <el-button type="primary" @click="openAddDialog">添加子设备</el-button>
+    </div>
     <el-table :data="list" border style="width: 95%">
       <el-table-column label="序号" type="index" align="center" width="80" />
       <el-table-column label="设备名称" property="name" align="center" width="180" />
@@ -20,7 +23,7 @@
             </template>
           </el-popconfirm>
         </template>
-      </el-table-column>>
+      </el-table-column>
     </el-table>
     <div class="mt-[20px] w-400px ml-auto">
       <el-pagination
@@ -33,15 +36,63 @@
         @current-change="getList"
       />
     </div>
+
+    <!-- 添加子设备对话框 -->
+    <el-dialog v-model="addDeviceDialogVisible" title="添加子设备" width="1100px">
+      <el-form :inline="true" :model="searchForm" class="demo-form-inline">
+        <el-form-item label="设备名称">
+          <el-input v-model="searchForm.name" placeholder="请输入产品名称" />
+        </el-form-item>
+        <el-form-item label="产品名称">
+          <el-input v-model="searchForm.productName" placeholder="请输入产品名称" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="searchDevices">查询</el-button>
+          <el-button @click="resetSearch">重置</el-button>
+        </el-form-item>
+      </el-form>
+      
+      <el-table 
+        ref="deviceTableRef" 
+        :data="deviceList" 
+        border 
+        style="width: 100%" 
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" />
+        <el-table-column label="设备名称" prop="name" />
+        <el-table-column label="产品名称" prop="productName" />
+        <el-table-column label="设备DN" prop="dn" />
+      </el-table>
+      
+      <div class="mt-[20px]">
+        <el-pagination
+          v-model:current-page="devicePage.pageNo"
+          v-model:page-size="devicePage.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, pager, jumper"
+          :total="devicePage.total"
+          @size-change="getUnbindList"
+          @current-change="getUnbindList"
+        />
+      </div>
+      
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="addDeviceDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="bindDevices">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-
-
-import {getChildrenDeviceList, unbindDevice} from "@/api/eiot/deviceinfo/devices.api";
+import { ref, reactive, onMounted } from 'vue'
+import { getChildrenDeviceList, getUnbindDeviceList, bindDevice, unbindDevice } from "@/api/eiot/deviceinfo/devices.api";
 import {dateFormatter} from "@/utils/formatTime";
 import {ElPopconfirm} from "element-plus";
+import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   deviceInfo: {
@@ -55,7 +106,24 @@ const page = reactive({
   pageSize: 10,
   total: 0
 })
+
+const devicePage = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  total: 0
+})
+
 const list = ref([])
+const deviceList = ref([])
+const addDeviceDialogVisible = ref(false)
+const deviceTableRef = ref()
+const selectedDevices = ref([])
+
+const searchForm = reactive({
+  name: '',
+  dn: '',
+  productName: '',
+})
 
 const getList = () => {
   getChildrenDeviceList({
@@ -64,16 +132,73 @@ const getList = () => {
     parentId: props.deviceInfo.deviceId,
   }).then((res) => {
     list.value = res.list
-    console.log(res)
+    page.total = res.total
+  })
+}
+
+const getUnbindList = () => {
+  getUnbindDeviceList({
+    pageNo: devicePage.pageNo,
+    pageSize: devicePage.pageSize,
+    name: searchForm.name,
+    dn: searchForm.dn,
+    productName: searchForm.productName,
+  }).then((res) => {
+    deviceList.value = res.list
+    devicePage.total = res.total
   })
 }
 
 const handleDelete = async (row: any) => {
   await unbindDevice({
-    id: row.id
+    idList: [row.id],
   })
   ElMessage.success('解绑成功!')
   getList()
+}
+
+const openAddDialog = () => {
+  addDeviceDialogVisible.value = true
+  // 重置搜索条件
+  searchForm.productName = ''
+  // 获取设备列表
+  getUnbindList()
+}
+
+const searchDevices = () => {
+  devicePage.pageNo = 1
+  getUnbindList()
+}
+
+const resetSearch = () => {
+  searchForm.productName = ''
+  devicePage.pageNo = 1
+  getUnbindList()
+}
+
+const handleSelectionChange = (val) => {
+  selectedDevices.value = val
+}
+
+const bindDevices = async () => {
+  if (selectedDevices.value.length === 0) {
+    ElMessage.warning('请至少选择一个设备')
+    return
+  }
+  
+  try {
+    // 这里应该调用绑定设备的API，但目前代码中没有找到相关API
+    // 暂时用一个模拟的逻辑来演示功能
+    await bindDevice({
+      idList: selectedDevices.value.map(item => item.id),
+      parentId: props.deviceInfo.deviceId,
+    })
+    ElMessage.success('设备绑定成功!')
+    addDeviceDialogVisible.value = false
+    getList() // 重新加载子设备列表
+  } catch (error) {
+    ElMessage.error('设备绑定失败')
+  }
 }
 
 onMounted(() => {

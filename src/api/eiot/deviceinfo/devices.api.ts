@@ -7,6 +7,7 @@ enum Api {
   devicesBatchDel = '/eiot/device/batchDelete',
   devicesAdd = '/eiot/device/add',
   devicesUpdate = '/eiot/device/save',
+  devicesBind = '/eiot/device/bind',
   devicesUnbind = '/eiot/device/unbind',
   devicesDetail = '/eiot/device/detail',
   devicesTagAdd = '/eiot/device/tag/add',
@@ -20,6 +21,7 @@ enum Api {
   deviceLogs = '/eiot/device/deviceLogs/list',
   serviceInvoke = '/eiot/device-ctrl/service/invoke',
   childrenDeviceList = '/eiot/device/children/list',
+  unbindDeviceList = '/eiot/device/children/unbindList',
   childrenDevice = '',
   getParentDevices = '/eiot/device/getParentDevices',
 
@@ -48,6 +50,15 @@ export const getDevicesList = async (data) => {
   return await request.get({
     url: Api.devicesList,
     params: data,
+  })
+}
+
+// 解绑
+export const bindDevice = async (data) => {
+  return await request.post({
+    url: Api.devicesBind,
+
+    data,
   })
 }
 
@@ -113,6 +124,15 @@ export const serviceInvoke = async (data) => {
 export const getChildrenDeviceList = async (data) => {
   return await request.post({
     url: Api.childrenDeviceList,
+
+    data,
+  })
+}
+
+// 获取未绑定的子设备列表
+export const getUnbindDeviceList = async (data) => {
+  return await request.post({
+    url: Api.unbindDeviceList,
 
     data,
   })
