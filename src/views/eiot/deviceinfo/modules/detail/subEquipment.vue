@@ -2,8 +2,15 @@
   <div>
     <div style="margin-bottom: 10px;">
       <el-button type="primary" @click="openAddDialog">添加子设备</el-button>
+      <el-button type="danger" @click="unbindSelectedDevices" :disabled="selectedSubDevices.length === 0">解绑子设备</el-button>
     </div>
-    <el-table :data="list" border style="width: 95%">
+    <el-table 
+      :data="list" 
+      border 
+      style="width: 95%" 
+      @selection-change="handleSubDeviceSelectionChange"
+    >
+      <el-table-column type="selection" width="55" />
       <el-table-column label="序号" type="index" align="center" width="80" />
       <el-table-column label="设备名称" property="name" align="center" width="180" />
       <el-table-column label="产品" property="productName" align="center" width="180" />
@@ -38,7 +45,7 @@
     </div>
 
     <!-- 添加子设备对话框 -->
-    <el-dialog v-model="addDeviceDialogVisible" title="添加子设备" width="1100px">
+    <el-dialog v-model="addDeviceDialogVisible" title="添加子设备" width="800px">
       <el-form :inline="true" :model="searchForm" class="demo-form-inline">
         <el-form-item label="设备名称">
           <el-input v-model="searchForm.name" placeholder="请输入产品名称" />
@@ -91,7 +98,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { getChildrenDeviceList, getUnbindDeviceList, bindDevice, unbindDevice } from "@/api/eiot/deviceinfo/devices.api";
 import {dateFormatter} from "@/utils/formatTime";
-import {ElPopconfirm} from "element-plus";
+import {ElMessageBox, ElPopconfirm} from "element-plus";
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({
@@ -118,6 +125,7 @@ const deviceList = ref([])
 const addDeviceDialogVisible = ref(false)
 const deviceTableRef = ref()
 const selectedDevices = ref([])
+const selectedSubDevices = ref([])
 
 const searchForm = reactive({
   name: '',
@@ -180,6 +188,10 @@ const handleSelectionChange = (val) => {
   selectedDevices.value = val
 }
 
+const handleSubDeviceSelectionChange = (val) => {
+  selectedSubDevices.value = val
+}
+
 const bindDevices = async () => {
   if (selectedDevices.value.length === 0) {
     ElMessage.warning('请至少选择一个设备')
@@ -187,8 +199,6 @@ const bindDevices = async () => {
   }
   
   try {
-    // 这里应该调用绑定设备的API，但目前代码中没有找到相关API
-    // 暂时用一个模拟的逻辑来演示功能
     await bindDevice({
       idList: selectedDevices.value.map(item => item.id),
       parentId: props.deviceInfo.deviceId,
@@ -199,6 +209,39 @@ const bindDevices = async () => {
   } catch (error) {
     ElMessage.error('设备绑定失败')
   }
+}
+
+const unbindSelectedDevices = () => {
+  if (selectedSubDevices.value.length === 0) {
+    ElMessage.warning('请至少选择一个子设备')
+    return
+  }
+
+  ElMessageBox.confirm(
+    `确定要解绑选中的 ${selectedSubDevices.value.length} 个子设备吗？`,
+    '确认解绑',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(async () => {
+    try {
+      // 批量解绑设备
+      await unbindDevice (
+        {
+          idList: selectedSubDevices.value.map(device => device.id),
+        }
+      )
+      ElMessage.success('解绑成功!')
+      getList()
+      selectedSubDevices.value = []
+    } catch (error) {
+      ElMessage.error('解绑失败')
+    }
+  }).catch(() => {
+    // 用户取消操作
+  })
 }
 
 onMounted(() => {
