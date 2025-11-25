@@ -66,11 +66,11 @@
     
     <!-- 模板编号表单插槽 -->
     <template #templateCodeForm="{ type, row }">
-      <span v-if="type === 'view' || type === 'update' ">
+      <span v-if="(type === 'view') || (type === 'update' && row.channelCode !== 'VMS')">
         <span v-if="row.templateCode" class="text-gray-600">{{ row.templateCode }}</span>
         <span v-else class="text-gray-400">-</span>
       </span>
-      <el-input v-else v-model="row.templateCode" placeholder="请输入模板编号" />
+      <el-input v-else v-model="row.templateCode" placeholder="（仅语音通道须配置，需在运营商后台创建对应模板）" />
     </template>
   </yt-crud>
 </template>
@@ -126,7 +126,7 @@ const column = ref<IColumn[]>([{
   tableWidth: 150,
   slot: true,
   formSlot: true,
-  addHide: true,
+  addHide: false,
   editHide: false,
   componentProps: {
     disabled: true
@@ -202,7 +202,7 @@ const getStatusText = (status: number) => {
     case 0:
       return '待审核'
     case 1:
-      return '审核成功'
+      return '已生效'
     case 2:
       return '审核失败'
     default:
