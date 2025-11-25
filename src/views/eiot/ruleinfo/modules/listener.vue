@@ -37,8 +37,9 @@
                       </el-col>
                       <el-col :span="15" v-if="!cond?.identifier?.endsWith(':*')">
                         <el-row class="param-item" v-for="(param, paramIndex) in cond.parameters" :key="param.identifier">
+                          <!-- 属性上报的属性选择 -->
                           <el-col :span="10" v-if="cond.identifier == 'report'">
-                            <el-select v-model="param.identifier" style="width: 100%;">
+                            <el-select v-model="param.identifier" style="width: 100%;" placeholder="选择属性">
                               <el-option
                                 v-for="p in (stateMap.get(item.pk)?.properties || [])"
                                 :label="p.name"
@@ -47,10 +48,32 @@
                               />
                             </el-select>
                           </el-col>
-                          <el-col :span="6">
-                            <el-select v-model="param.comparator" @change="onComparatorChange(param)">
+                          <!-- 事件的属性选择 -->
+                          <el-col :span="10" v-else-if="cond.type == 'event' && cond.identifier && !cond.identifier.endsWith(':*')">
+                            <el-select v-model="param.identifier" style="width: 100%;" placeholder="选择事件属性">
                               <el-option
-                                v-for="cp in comparators"
+                                v-for="p in getEventProperties(item.pk, cond.identifier)"
+                                :label="p.name"
+                                :value="p.identifier"
+                                :key="p.identifier"
+                              />
+                            </el-select>
+                          </el-col>
+                          <!-- 服务的属性选择 -->
+                          <el-col :span="10" v-else-if="cond.type == 'service' && cond.identifier && !cond.identifier.endsWith(':*')">
+                            <el-select v-model="param.identifier" style="width: 100%;" placeholder="选择服务输出参数">
+                              <el-option
+                                v-for="p in getServiceProperties(item.pk, cond.identifier)"
+                                :label="p.name"
+                                :value="p.identifier"
+                                :key="p.identifier"
+                              />
+                            </el-select>
+                          </el-col>
+                          <el-col :span="6">
+                            <el-select v-model="param.comparator" @change="onComparatorChange(param)" placeholder="选择比较方式">
+                              <el-option
+                                v-for="cp in getAvailableComparators(item.pk, cond, param)"
                                 :label="cp.name"
                                 :value="cp.value"
                                 :key="cp.value"
@@ -66,8 +89,8 @@
                             <el-input
                               v-model="param.value"
                               auto-complete="off"
-                              :placeholder="getValuePlaceholder(param?.comparator)"
-                              @blur="validateParamValue(param)"
+                              :placeholder="getValuePlaceholder(param.comparator, item.pk, cond, param)"
+                              @blur="validateParamValue(param, item.pk, cond)"
                             />
                           </el-col>
                           <el-col :span="1">
@@ -222,6 +245,7 @@ const initThingModel = (pk, res) => {
     state.properties.push({
       identifier: p.identifier,
       name: p.name,
+      dataType: p.dataType, // 保存完整的 dataType 信息
     })
   })
 
@@ -237,6 +261,7 @@ const initThingModel = (pk, res) => {
       items.push({
         identifier: p.identifier,
         name: p.name,
+        dataType: p.dataType, // 保存完整的 dataType 信息
       })
     })
   })
@@ -253,6 +278,7 @@ const initThingModel = (pk, res) => {
       items.push({
         identifier: p.identifier,
         name: p.name,
+        dataType: p.dataType, // 保存完整的 dataType 信息
       })
     })
   })
@@ -370,12 +396,178 @@ const comparators = ref([
   },
 ])
 
+// 获取事件的属性列表
+const getEventProperties = (pk: string, eventIdentifier: string) => {
+  const state = stateMap.value.get(pk)
+  if (!state || !state.events) return []
+
+  const event = state.events.find(e => e.identifier === eventIdentifier)
+  if (!event || !event.items) return []
+
+  // 添加"任意"选项和具体属性
+  return [
+    { identifier: '*', name: '任意属性' },
+    ...event.items
+  ]
+}
+
+// 获取服务的输出参数列表
+const getServiceProperties = (pk: string, serviceIdentifier: string) => {
+  const state = stateMap.value.get(pk)
+  if (!state || !state.services) return []
+
+  const service = state.services.find(s => s.identifier === serviceIdentifier)
+  if (!service || !service.items) return []
+
+  // 添加"任意"选项和具体参数
+  return [
+    { identifier: '*', name: '任意参数' },
+    ...service.items
+  ]
+}
+
+// 根据属性类型获取可用的比较器
+const getAvailableComparators = (pk: string, cond: any, param: any) => {
+  // 确保comparators存在
+  if (!comparators.value || !Array.isArray(comparators.value) || comparators.value.length === 0) {
+    return []
+  }
+
+  // 检查必要的参数
+  if (!pk || !cond || !param) {
+    return comparators.value
+  }
+
+  // 如果没有选择具体属性，返回所有比较器
+  if (!param.identifier || param.identifier === '*') {
+    return comparators.value
+  }
+
+  // 获取属性的数据类型
+  const propertyType = getPropertyDataType(pk, cond, param)
+
+  // 根据数据类型过滤比较器
+  switch (propertyType) {
+    case 'int':
+    case 'float':
+    case 'double':
+    case 'long':
+    case 'int32':
+    case 'int64':
+      // 数值类型：支持所有比较器
+      return comparators.value
+
+    case 'text':
+    case 'string':
+      // 字符串类型：不支持数值比较
+      return comparators.value.filter(c =>
+        !['>', '<', '>=', '<=', 'between', 'notBetween'].includes(c.value)
+      )
+
+    case 'bool':
+    case 'boolean':
+      // 布尔类型：只支持等于和不等于
+      return comparators.value.filter(c =>
+        ['==', '!='].includes(c.value)
+      )
+
+    case 'enum':
+      // 枚举类型：支持等于、不等于、包含
+      return comparators.value.filter(c =>
+        ['==', '!=', 'contain', 'notContain'].includes(c.value)
+      )
+
+    default:
+      // 未知类型：返回基础比较器
+      return comparators.value.filter(c =>
+        ['==', '!=', 'contain', 'notContain'].includes(c.value)
+      )
+  }
+}
+
+// 获取属性的数据类型
+const getPropertyDataType = (pk: string, cond: any, param: any) => {
+  // 防御性检查
+  if (!pk || !cond || !param) {
+    return 'string'
+  }
+
+  const state = stateMap.value.get(pk)
+
+  if (!state) return 'string'
+
+  let dataTypeInfo = null
+
+  // 根据条件类型获取属性信息
+  if (cond.identifier === 'report') {
+    // 属性上报：从properties中查找
+    const property = state.properties?.find(p => p.identifier === param.identifier)
+    dataTypeInfo = property?.dataType
+  } else if (cond.type === 'event') {
+    // 事件：从events中查找
+    const event = state.events?.find(e => e.identifier === cond.identifier)
+    const eventParam = event?.items?.find(p => p.identifier === param.identifier)
+    dataTypeInfo = eventParam?.dataType
+  } else if (cond.type === 'service') {
+    // 服务：从services中查找
+    const service = state.services?.find(s => s.identifier === cond.identifier)
+    const serviceParam = service?.items?.find(p => p.identifier === param.identifier)
+    dataTypeInfo = serviceParam?.dataType
+  }
+
+  // 处理物模型中的数据类型结构
+  if (!dataTypeInfo) return 'string'
+
+  // 如果dataType是对象且包含type字段，则使用type字段的值
+  if (typeof dataTypeInfo === 'object' && dataTypeInfo.type) {
+    const type = dataTypeInfo.type
+    // 标准化数据类型名称
+    switch (type) {
+      case 'int32':
+      case 'int64':
+        return 'int'
+      case 'float':
+      case 'double':
+        return 'float'
+      case 'bool':
+      case 'boolean':
+        return 'bool'
+      case 'text':
+      case 'string':
+        return 'string'
+      case 'enum':
+        return 'enum'
+      case 'array':
+        return 'array'
+      case 'struct':
+        return 'struct'
+      default:
+        return type
+    }
+  }
+
+  // 如果dataType是字符串，直接返回
+  if (typeof dataTypeInfo === 'string') {
+    return dataTypeInfo
+  }
+
+  return 'string'
+}
+
 const conditionChange = (cond, list, e) => {
+  // 清空之前的参数
+  cond.parameters = []
+
   for (let i in list) {
     for (let k in list[i].items) {
       const item = list[i].items[k]
       if (item.identifier === e) {
         cond.type = item.type || ''
+
+        // 如果是事件、服务或属性上报类型，且不是通配符，自动添加一个参数
+        if ((item.type === 'event' || item.type === 'service' || e === 'report') && !e.endsWith(':*')) {
+          cond.parameters = [{}]
+        }
         return
       }
     }
@@ -383,12 +575,18 @@ const conditionChange = (cond, list, e) => {
 }
 
 // 获取参数值输入提示
-const getValuePlaceholder = (comparator) => {
+const getValuePlaceholder = (comparator, pk?: string, cond?: any, param?: any) => {
   if (!comparator) return '请输入值'
+
+  // 获取属性数据类型以提供更精确的提示
+  const dataType = pk && cond && param ? getPropertyDataType(pk, cond, param) : 'string'
 
   switch (comparator) {
     case 'between':
     case 'notBetween':
+      if (['int', 'float', 'double', 'long'].includes(dataType)) {
+        return '请输入数值范围，格式: 最小值-最大值 (如: 10-20)'
+      }
       return '请输入范围值，格式: 最小值-最大值 (如: 10-20)'
     case 'contain':
     case 'notContain':
@@ -397,10 +595,27 @@ const getValuePlaceholder = (comparator) => {
     case '<':
     case '>=':
     case '<=':
+      if (['int', 'float', 'double', 'long'].includes(dataType)) {
+        return '请输入数值 (如: 100)'
+      }
       return '请输入数值'
     case '==':
     case '!=':
-      return '请输入比较值'
+      switch (dataType) {
+        case 'bool':
+        case 'boolean':
+          return '请输入true或false'
+        case 'int':
+        case 'long':
+          return '请输入整数 (如: 100)'
+        case 'float':
+        case 'double':
+          return '请输入数值 (如: 100.5)'
+        case 'enum':
+          return '请输入枚举值'
+        default:
+          return '请输入比较值'
+      }
     default:
       return '请输入值'
   }
@@ -414,10 +629,13 @@ const onComparatorChange = (param) => {
 }
 
 // 验证参数值
-const validateParamValue = (param) => {
+const validateParamValue = (param, pk?: string, cond?: any) => {
   if (!param || !param.value || !param.comparator) return true
 
   const { comparator, value } = param
+
+  // 获取属性数据类型
+  const dataType = pk && cond ? getPropertyDataType(pk, cond, param) : 'string'
 
   // 验证between和notBetween格式
   if (comparator === 'between' || comparator === 'notBetween') {
@@ -447,6 +665,38 @@ const validateParamValue = (param) => {
       ElMessage.warning('该操作符需要输入数值')
       return false
     }
+  }
+
+  // 根据数据类型验证值
+  switch (dataType) {
+    case 'int':
+    case 'long':
+      if (!['between', 'notBetween'].includes(comparator)) {
+        const intValue = parseInt(value)
+        if (isNaN(intValue) || intValue.toString() !== value.trim()) {
+          ElMessage.warning('请输入有效的整数')
+          return false
+        }
+      }
+      break
+    case 'float':
+    case 'double':
+      if (!['between', 'notBetween'].includes(comparator)) {
+        const floatValue = parseFloat(value)
+        if (isNaN(floatValue)) {
+          ElMessage.warning('请输入有效的数值')
+          return false
+        }
+      }
+      break
+    case 'bool':
+    case 'boolean':
+      const boolValue = value.toLowerCase().trim()
+      if (!['true', 'false', '1', '0'].includes(boolValue)) {
+        ElMessage.warning('布尔值只能是true、false、1或0')
+        return false
+      }
+      break
   }
 
   return true

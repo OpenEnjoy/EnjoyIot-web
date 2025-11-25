@@ -13,6 +13,9 @@ export interface IChannelTemplateVo {
   title: string
   content: string
   createTime: number
+  status?: number // 状态：0-待审核，1-审核成功，2-审核失败
+  templateCode?: string // 模板编号
+  channelCode?: string // 通道编号
 }
 interface IPage {
   pageNum?: number

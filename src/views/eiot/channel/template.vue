@@ -13,11 +13,71 @@
     @onLoad="getData"
     @saveFun="onSave"
     @delFun="onDelete"
-  />
+  >
+    <!-- 审核状态插槽 -->
+    <template #status="{ row }">
+      <div class="flex items-center">
+        <el-tag
+          :type="getStatusType(row.status)"
+          size="small"
+        >
+          {{ getStatusText(row.status) }}
+        </el-tag>
+        <!-- 审核失败时显示提示 -->
+        <el-tooltip
+          v-if="row.status === 2"
+          content="审核失败，请前往运营商后台查看失败原因"
+          placement="top"
+        >
+          <el-icon class="ml-2 text-red-500 cursor-pointer">
+            <Warning />
+          </el-icon>
+        </el-tooltip>
+      </div>
+    </template>
+
+    <!-- 模板编号插槽 -->
+    <template #templateCode="{ row }">
+      <span v-if="row.templateCode" class="text-gray-600">{{ row.templateCode }}</span>
+      <span v-else class="text-gray-400">-</span>
+    </template>
+    
+    <!-- 审核状态表单插槽 -->
+    <template #statusForm="{ type, row }">
+      <div v-if="type === 'view' || type === 'update'" class="flex items-center">
+        <el-tag
+          :type="getStatusType(row.status)"
+          size="small"
+        >
+          {{ getStatusText(row.status) }}
+        </el-tag>
+        <!-- 审核失败时显示提示 -->
+        <el-tooltip
+          v-if="row.status === 2"
+          content="审核失败，请前往运营商后台查看失败原因"
+          placement="top"
+        >
+          <el-icon class="ml-2 text-red-500 cursor-pointer">
+            <Warning />
+          </el-icon>
+        </el-tooltip>
+      </div>
+    </template>
+    
+    <!-- 模板编号表单插槽 -->
+    <template #templateCodeForm="{ type, row }">
+      <span v-if="(type === 'view') || (type === 'update' && row.channelCode !== 'VMS')">
+        <span v-if="row.templateCode" class="text-gray-600">{{ row.templateCode }}</span>
+        <span v-else class="text-gray-400">-</span>
+      </span>
+      <el-input v-else v-model="row.templateCode" placeholder="（仅语音通道须配置，需在运营商后台创建对应模板）" />
+    </template>
+  </yt-crud>
 </template>
 
 <script lang="ts" setup>
 import { IColumn } from '@/components/common/types/tableCommon'
+import { Warning } from '@element-plus/icons-vue'
 
 import YtCrud from '@/components/common/yt-crud.vue'
 import {
@@ -51,6 +111,25 @@ const column = ref<IColumn[]>([{
   componentProps: {
     type: 'textarea',
     rows: 4,
+  }
+}, {
+  label: '审核状态',
+  key: 'status',
+  tableWidth: 120,
+  slot: true,
+  formSlot: true,
+  addHide: true,
+  editHide: false
+}, {
+  label: '模板编号',
+  key: 'templateCode',
+  tableWidth: 150,
+  slot: true,
+  formSlot: true,
+  addHide: false,
+  editHide: false,
+  componentProps: {
+    disabled: true
   }
 }])
 
@@ -115,5 +194,33 @@ const onDelete = async (row: any) => {
   ElMessage.success('删除成功!')
   state.loading = false
   getData()
+}
+
+// 获取状态文本
+const getStatusText = (status: number) => {
+  switch (status) {
+    case 0:
+      return '待审核'
+    case 1:
+      return '已生效'
+    case 2:
+      return '审核失败'
+    default:
+      return '未知状态'
+  }
+}
+
+// 获取状态标签类型
+const getStatusType = (status: number) => {
+  switch (status) {
+    case 0:
+      return 'warning'
+    case 1:
+      return 'success'
+    case 2:
+      return 'danger'
+    default:
+      return 'info'
+  }
 }
 </script>
