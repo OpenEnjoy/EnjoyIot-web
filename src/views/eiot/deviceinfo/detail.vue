@@ -299,7 +299,7 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd">
+      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd"  v-if="state.nodeType === 0">
         <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />
       </el-tab-pane>
     </el-tabs>
