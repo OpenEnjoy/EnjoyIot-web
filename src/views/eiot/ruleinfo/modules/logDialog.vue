@@ -60,6 +60,8 @@ const getStateName = (state: string) => {
       return '过滤器执行未通过'
     case 'executed_action':
       return '动作执行完成'
+    case 'recovered':
+      return '告警解除动作完成'
   }
   return ''
 }

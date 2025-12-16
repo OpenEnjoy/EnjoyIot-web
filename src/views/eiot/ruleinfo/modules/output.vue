@@ -114,6 +114,9 @@ const actionTypeChange = (item) => {
           script: `this.translate=function(msg,device){
 
 }`,
+          recoverScript: `this.translate=function(msg,device){
+
+}`,
         },
       ]
     } else if (item.type == 'mqtt') {
