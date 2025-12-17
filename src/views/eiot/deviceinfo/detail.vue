@@ -287,9 +287,29 @@
         </el-table>
       </el-tab-pane>
 
-      <!--      <el-tab-pane label="设备配置" name="config" :disabled="inAdd">-->
-      <!--        <DeviceConfig v-if="state.activeName === 'config'" :deviceInfo="state" />-->
-      <!--      </el-tab-pane>-->
+      <el-tab-pane label="设备配置" name="config" :disabled="inAdd">
+        <div v-if="state.activeName === 'config'" class="px-4">
+          <el-form label-width="90px" class="w-full">
+            <el-form-item label="配置内容">
+              <el-input
+                v-model="state.configContent"
+                type="textarea"
+                :rows="18"
+                placeholder="请输入设备配置(JSON)"
+                :disabled="state.configLoading"
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-space>
+                <el-button @click="formatConfig" :disabled="state.configLoading">格式化</el-button>
+                <el-button type="primary" @click="saveDeviceConfig" :loading="state.configLoading">
+                  保存
+                </el-button>
+              </el-space>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-tab-pane>
 
       <el-tab-pane label="模拟设备" name="simulator" :disabled="inAdd">
         <DeviceSimulator
@@ -443,9 +463,9 @@ import PropertyChart from './modules/PropertyChart.vue'
 import productList from './product-list.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
-import DeviceConfig from "./modules/detail/DeviceConfig.vue";
 import SubEquipment from "./modules/detail/subEquipment.vue";
 import { ref } from 'vue'
+import request from '@/config/axios'
 
 const { t } = useI18n() // 国际化
 const route = useRoute()
@@ -525,6 +545,9 @@ const state = reactive<any>({
     name: '',
     data: []
   },
+  // 设备配置
+  configContent: '',
+  configLoading: false,
   dataType: '',
   currHistoryProperty: {},
   historyTime: [
@@ -886,6 +909,8 @@ const handleClick = (tab) => {
     })
   } else if (tab.paneName == 'event') {
     getEvents()
+  } else if (tab.paneName === 'config') {
+    loadDeviceConfig()
   } else {
     getdata()
   }
@@ -1022,6 +1047,73 @@ const sendDeviceMsg = (fun) => {
     })
   })
 }
+
+// 加载设备配置
+const loadDeviceConfig = async () => {
+  if (!state.deviceId) return
+  state.configLoading = true
+  try {
+    const res: any = await request.post({
+      url: '/eiot/device/config/get',
+      data: { deviceId: state.deviceId }
+    })
+    const cfg = res?.data?.config ?? res?.config ?? ''
+    if (cfg) {
+      try {
+        state.configContent = JSON.stringify(JSON.parse(cfg), null, 2)
+      } catch {
+        state.configContent = cfg
+      }
+    } else {
+      state.configContent = '{}'
+    }
+  } catch (e) {
+    ElMessage.error('获取设备配置失败')
+  } finally {
+    state.configLoading = false
+  }
+}
+
+// 保存设备配置
+const saveDeviceConfig = async () => {
+  if (!state.deviceId) {
+    ElMessage.warning('设备ID缺失')
+    return
+  }
+  let formatted = state.configContent
+  try {
+    const obj = JSON.parse(state.configContent || '{}')
+    formatted = JSON.stringify(obj)
+  } catch (e) {
+    ElMessage.error('配置不是合法的 JSON')
+    return
+  }
+  state.configLoading = true
+  try {
+    await request.post({
+      url: '/eiot/device/config/save',
+      data: { deviceId: state.deviceId, config: formatted }
+    })
+    ElMessage.success('保存成功')
+    loadDeviceConfig()
+  } catch (e) {
+    ElMessage.error('保存失败')
+  } finally {
+    state.configLoading = false
+  }
+}
+
+// 格式化配置
+const formatConfig = () => {
+  try {
+    const obj = JSON.parse(state.configContent || '{}')
+    state.configContent = JSON.stringify(obj, null, 2)
+    ElMessage.success('格式化完成')
+  } catch (e) {
+    ElMessage.error('格式化失败：内容不是合法 JSON')
+  }
+}
+
 const closeDialog = () => {
   state.propertyWriteFormVisible = false
   state.serviceFormVisible = false
