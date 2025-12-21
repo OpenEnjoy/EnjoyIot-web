@@ -85,26 +85,19 @@
         </el-card>
         <el-tabs v-model="activeName" type="border-card">
           <el-tab-pane label="监听器" :name="1">
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="静默周期(秒)" prop="lsnSilentSec">
-                  <el-input v-model="row.lsnSilentSec" type="number" placeholder="请输入静默时间(秒)" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="执行条件" prop="lsnCond">
-                  <el-select v-model="row.lsnCond" placeholder="请选择执行条件">
-                    <el-option label="任意满足" :value="1" />
-                    <el-option label="全部满足" :value="2" />
-                    <el-option label="不满足" :value="3" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
             <listener  ref="listenerRef"  v-if="activeName === 1" v-model:listeners="row.listeners" />
           </el-tab-pane>
           <el-tab-pane label="过滤器" :name="2">
-            <filtera v-if="activeName === 2" v-model:filters="row.filters" />
+            <el-col :span="12">
+              <el-form-item label="执行条件" prop="lsnCond">
+                <el-select v-model="row.lsnCond" placeholder="请选择执行条件">
+                  <el-option label="任意满足" :value="1" />
+                  <el-option label="全部满足" :value="2" />
+                  <el-option label="不满足" :value="3" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <filtera v-if="activeName === 2" v-model:filters="row.filters" :listeners="row.listeners" />
           </el-tab-pane>
           <el-tab-pane label="输出" :name="3">
             <Output v-if="activeName === 3" v-model:list="row.actions" type="rule" actions="device,http,mqtt,kafka,tcp,alert" />
@@ -218,10 +211,108 @@ const state = reactive({
   },
 })
 const data = ref([])
+
+// 验证过滤器
+const validateFilters = (filters: any[]) => {
+  if (!filters || filters.length === 0) return true
+  for (let i = 0; i < filters.length; i++) {
+    const filter = filters[i]
+    if (filter.deviceRadio === '指定设备' && !filter.pk) {
+      ElMessage.error(`第${i + 1}个过滤器：请选择设备`)
+      activeName.value = 2
+      return false
+    }
+    if (filter.conditions && filter.conditions.length > 0) {
+      for (let j = 0; j < filter.conditions.length; j++) {
+        const cond = filter.conditions[j]
+        if (!cond.identifier) {
+          ElMessage.error(`第${i + 1}个过滤器，第${j + 1}个条件：请选择属性`)
+          activeName.value = 2
+          return false
+        }
+        if (!cond.comparator) {
+          ElMessage.error(`第${i + 1}个过滤器，第${j + 1}个条件：请选择比较方式`)
+          activeName.value = 2
+          return false
+        }
+        if (cond.value === undefined || cond.value === '' || cond.value === null) {
+          ElMessage.error(`第${i + 1}个过滤器，第${j + 1}个条件：请输入值`)
+          activeName.value = 2
+          return false
+        }
+      }
+    }
+  }
+  return true
+}
+
+// 验证输出
+const validateActions = (actions: any[]) => {
+  if (!actions || actions.length === 0) return true
+  for (let i = 0; i < actions.length; i++) {
+    const action = actions[i]
+    if (!action.type) {
+      ElMessage.error(`第${i + 1}个输出：请选择输出类型`)
+      activeName.value = 3
+      return false
+    }
+    if (action.type === 'device') {
+      if (!action.services || action.services.length === 0) {
+        ElMessage.error(`第${i + 1}个输出(设备控制)：请配置设备动作`)
+        activeName.value = 3
+        return false
+      }
+      for (const s of action.services) {
+        if (!s.productKey) {
+          ElMessage.error(`第${i + 1}个输出(设备控制)：请选择产品`)
+          activeName.value = 3
+          return false
+        }
+        if (!s.deviceName) {
+          ElMessage.error(`第${i + 1}个输出(设备控制)：请选择设备`)
+          activeName.value = 3
+          return false
+        }
+      }
+    }
+    if (action.type === 'http') {
+      for (const s of action.services) {
+        if (!s.url) {
+          ElMessage.error(`第${i + 1}个输出(HTTP)：请输入URL`)
+          activeName.value = 3
+          return false
+        }
+      }
+    }
+    if (action.type === 'mqtt') {
+      for (const s of action.services) {
+        if (!s.host) {
+          ElMessage.error(`第${i + 1}个输出(MQTT)：请输入主机地址`)
+          activeName.value = 3
+          return false
+        }
+        if (!s.topic) {
+           // topic might be optional or in script? 
+           // Let's assume script handles payload, but connection needs host
+        }
+      }
+    }
+  }
+  return true
+}
+
 // 保存数据
 const onSave = ({ type, data, cancel }: any) => {
   // 验证监听器配置
   if (listenerRef.value && !listenerRef.value.validateAllListeners()) {
+    return
+  }
+  // 验证过滤器配置
+  if (!validateFilters(data.filters)) {
+    return
+  }
+  // 验证输出配置
+  if (!validateActions(data.actions)) {
     return
   }
   state.loading = true
