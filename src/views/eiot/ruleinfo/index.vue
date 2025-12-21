@@ -262,18 +262,6 @@ const validateActions = (actions: any[]) => {
         activeName.value = 3
         return false
       }
-      for (const s of action.services) {
-        if (!s.productKey) {
-          ElMessage.error(`第${i + 1}个输出(设备控制)：请选择产品`)
-          activeName.value = 3
-          return false
-        }
-        if (!s.deviceName) {
-          ElMessage.error(`第${i + 1}个输出(设备控制)：请选择设备`)
-          activeName.value = 3
-          return false
-        }
-      }
     }
     if (action.type === 'http') {
       for (const s of action.services) {

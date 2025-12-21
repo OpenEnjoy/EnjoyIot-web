@@ -89,13 +89,6 @@ export default defineComponent({
     console.log('1111', this.services)
     this.servicesRef = this.services
     this.services.map((m, i) => {
-      if (m.device && i === 0) {
-        const firstObj = m.device ? m.device.split('/') : ''
-        if (firstObj) {
-          this.selectedPk = firstObj[0] || ''
-          this.selectedDn = firstObj[1] === '#' ? '' : firstObj[1]
-        }
-        this.getProductObjectModel(this.selectedPk)
       }
     })
   },
@@ -115,21 +108,6 @@ export default defineComponent({
         this.initThingModel(pk, data)
       })
     },
-    initThingModel(pk, res) {
-      this.propertiesList = []
-      this.servicesList = []
-      if (!res) return
-      res?.model?.properties.forEach((p) => {
-        this.propertiesList.push(p)
-      })
-      res?.model?.services.forEach((s) => {
-        this.servicesList.push(s)
-      })
-    },
-    addService() {
-      console.log(this.selectedPk + '/' + (this.selectedDn || '#'))
-      this.servicesRef.push({
-        device: this.selectedPk + '/' + (this.selectedDn || '#'),
         identifier: 'set',
         inputData: [],
       })
@@ -152,8 +130,6 @@ export default defineComponent({
         if (s.identifier == identifier) {
           service = s
           return service
-        }
-      })
       this.servicesRef.forEach((s) => {
         if (s.identifier == identifier) {
           service = s
