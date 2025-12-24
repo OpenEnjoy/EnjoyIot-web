@@ -23,7 +23,7 @@
       menu-slot
     >
       <template #state="scope">
-        <el-tag v-if="scope.row.online" type="success" size="small">在线</el-tag>
+        <el-tag v-if="scope.row.state === 1" type="success" size="small">在线</el-tag>
         <el-tag v-else type="danger" size="small">离线</el-tag>
       </template>
       <template #menuSlot="scope">
@@ -38,7 +38,8 @@
 </template>
 <script lang="ts" setup>
 import { IColumn } from '@/components/common/types/tableCommon'
-import { DeviceInfoApi } from '@/api/eiot/deviceinfo'
+import {getChildrenDeviceList} from "@/api/eiot/deviceinfo/devices.api";
+import {unbindDevice} from "@/api/eiot/deviceinfo/devices.api";
 
 import { ElPopconfirm } from 'element-plus'
 import YtTable from '@/components/common/yt-table'
@@ -54,11 +55,12 @@ const state = reactive({
   },
   total: 0,
   loading: false,
+  parentId: '',
 })
 const columns = ref<IColumn[]>([
   {
-    label: '设备ID',
-    key: 'deviceId',
+    label: '设备名称',
+    key: 'name',
   },
   {
     label: '产品',
@@ -67,7 +69,7 @@ const columns = ref<IColumn[]>([
   },
   {
     label: '设备DN',
-    key: 'deviceName',
+    key: 'dn',
     tableWidth: 150,
   },
   {
@@ -78,78 +80,39 @@ const columns = ref<IColumn[]>([
   },
   {
     label: '创建时间',
-    key: 'createAt',
+    key: 'createTime',
     type: 'date',
     sortable: true,
     tableWidth: 180,
   },
 ])
 const data = ref([
-  {
-    id: '16465723451670abc123000030000011a',
-    deviceId: '16465723451670abc123000030000011a',
-    productKey: 'Rf4QSjbm65X45753',
-    productName: '一路开关',
-    deviceName: 'ABC12300003',
-    model: 'S01',
-    secret: null,
-    parentId: '16465226744430aabbccdd22000000143',
-    uid: 'fa1c5eaa-de6e-48b6-805e-8f091c7bb831',
-    subUid: [],
-    state: {
-      online: true,
-      onlineTime: 1681868220001,
-      offlineTime: 1680171375073,
-    },
-    property: null,
-    tag: {},
-    group: {},
-    createAt: 1646572345167,
-  },
-  {
-    id: '16465723448670abc1230000200000115',
-    deviceId: '16465723448670abc1230000200000115',
-    productKey: 'Rf4QSjbm65X45753',
-    productName: '一路开关',
-    deviceName: 'ABC12300002',
-    model: 'S01',
-    secret: null,
-    parentId: '16465226744430aabbccdd22000000143',
-    uid: 'fa1c5eaa-de6e-48b6-805e-8f091c7bb831',
-    subUid: [],
-    state: {
-      online: true,
-      onlineTime: 1681868220123,
-      offlineTime: 1680171375097,
-    },
-    property: null,
-    tag: {},
-    group: {},
-    createAt: 1646572344867,
-  },
 ])
 
 const handleDelete = async (row: any) => {
   state.loading = true
-  await unbindDevice(row.id)
-  ElMessage.success('删除成功!')
+  await unbindDevice({
+    idList: [row.id],
+  })
+  ElMessage.success('解绑成功!')
   state.loading = false
   getData()
 }
 
 const getData = () => {
+  state.parentId = state.row.id
   getChildrenDeviceList({
     ...state.page,
-    coverData: state.row.id,
+    parentId: state.parentId,
   })
     .then((res) => {
-      state.page.pageSize = res.data.length
-      state.page.pageNo = 1
-      state.total = res.data.length
-      res.data.forEach((d: any) => {
-        d['productName'] = d['product']?.name
-      })
-      data.value = res.data
+      // state.page.pageSize = res.data.length
+      // state.page.pageNo = 1
+      state.total = res.total
+      // res.data.list.forEach((d: any) => {
+      //   d['productName'] = d['product']?.name
+      // })
+      data.value = res.list
       console.log(res)
     })
     .finally(() => {

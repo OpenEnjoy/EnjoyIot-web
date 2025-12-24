@@ -1,8 +1,12 @@
 <template>
   <div>
     <el-form label-width="120px" v-for="service in config.services" :key="service">
-      <el-form-item label="转换脚本">
+      <el-form-item label="告警触发脚本">
         <code-editor style="width: 100%" v-model:code="service.script" />
+      </el-form-item>
+      <el-form-item label="告警解除脚本">
+        <code-editor style="width: 100%" v-model:code="service.recoverScript" />
+        <div class="form-tips">留空则复用触发脚本</div>
       </el-form-item>
     </el-form>
   </div>
@@ -20,6 +24,7 @@ const props = defineProps({
         services: [
           {
             script: '',
+            recoverScript: '',
           },
         ],
       }

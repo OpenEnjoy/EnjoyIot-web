@@ -55,7 +55,7 @@ const column: IColumn[] = [{
   }
 }, {
   label: '创建时间',
-  key: 'createAt',
+  key: 'createTime',
   type: 'date',
   sortable: true,
   formHide: true,

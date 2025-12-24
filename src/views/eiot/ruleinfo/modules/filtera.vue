@@ -24,40 +24,66 @@
               </div>
             </div>
           </template>
-          <div class="condition-box" v-if="item.dn || item.deviceRadio === '使用当前设备'">
+          <div class="condition-box" v-if="item.pk || item.deviceRadio === '使用当前设备'">
+            <div class="flex items-center" style="padding: 10px;"> 
+              <div class="mr-4">条件组合</div> 
+              <el-radio-group v-model="item.cond"> 
+                <el-radio :label="2">全部满足（AND）</el-radio> 
+                <el-radio :label="1">任意满足（OR）</el-radio> 
+                <el-radio :label="3">全部不满足（NOT）</el-radio> 
+              </el-radio-group> 
+            </div>
             <div class="main">
               <div class="title">条件</div>
               <div class="main-box">
                 <div class="box" v-for="(cond, condIndex) in item.conditions" :key="condIndex">
                   <div class="item">
                     <el-row style="width: 100%;">
-                      <el-col :span="7">
+                      <el-col :span="4">
+                        <el-select v-model="cond.type" placeholder="类型" @change="onTypeChange(cond)">
+                          <el-option label="设备属性" value="property" />
+                          <el-option label="设备状态" value="state" />
+                          <el-option label="设备标签" value="tag" />
+                        </el-select>
+                      </el-col>
+                      <el-col :span="6">
                         <el-select
-                          v-if="item.deviceRadio !== '使用当前设备'"
                           v-model="cond.identifier"
-                          @change="(e) => conditionChange(cond, stateMap.get(item.pk), e)"
+                          placeholder="选择属性/状态"
+                          @change="(e) => conditionChange(cond, e)"
                         >
-                          <el-option-group v-for="group in stateMap.get(item.pk)" :key="group.name" :label="group.name">
-                            <el-option v-for="pro in group.items" :label="pro.name" :value="pro.identifier" :key="pro.identifier" />
-                          </el-option-group>
-                        </el-select>
-                        <el-select v-else v-model="cond.type" @change="handleEmits">
-                          <el-option label="设备属性" value="property" key="property" />
-                          <el-option label="设备标签" value="tag" key="tag" />
+                           <el-option
+                             v-for="opt in getOptions(cond, item)"
+                             :key="opt.identifier"
+                             :label="opt.name"
+                             :value="opt.identifier"
+                           />
                         </el-select>
                       </el-col>
-                      <el-col :span="5" v-if="item.deviceRadio === '使用当前设备'">
-                        <el-input v-model="cond.identifier" auto-complete="off" />
-                      </el-col>
-                      <el-col :span="10">
+                      <el-col :span="14">
                         <el-row class="param-item">
                           <el-col :span="8">
-                            <el-select v-model="cond.comparator">
-                              <el-option v-for="cp in comparators" :label="cp.name" :value="cp.value" :key="cp.value" />
+                            <el-select v-model="cond.comparator" @change="onComparatorChange(cond)" placeholder="选择比较方式">
+                              <el-option
+                                v-for="cp in getAvailableComparators(getPk(item), cond.identifier)"
+                                :label="cp.name"
+                                :value="cp.value"
+                                :key="cp.value"
+                              >
+                                <span>{{ cp.name }}</span>
+                                <span v-if="cp.description" style="color: #999; font-size: 12px; margin-left: 8px;">
+                                  {{ cp.description }}
+                                </span>
+                              </el-option>
                             </el-select>
                           </el-col>
-                          <el-col :span="10">
-                            <el-input v-model="cond.value" auto-complete="off" />
+                          <el-col :span="16">
+                            <el-input
+                              v-model="cond.value"
+                              auto-complete="off"
+                              :placeholder="getValuePlaceholder(cond.comparator, getPk(item), cond.identifier)"
+                              @blur="validateParamValue(cond, getPk(item))"
+                            />
                           </el-col>
                         </el-row>
                       </el-col>
@@ -85,6 +111,7 @@ import {ThingModelApi} from "@/api/eiot/thingmodel";
 
 const props = defineProps({
   filters: propTypes.array.def([]),
+  listeners: propTypes.array.def([]),
 })
 const emits = defineEmits(['update:filters'])
 const arr: number[] = []
@@ -123,6 +150,7 @@ const initThingModel = (pk, res) => {
         type: 'property',
         identifier: p.identifier,
         name: p.name,
+        dataType: p.dataType,
       })
     })
 
@@ -139,6 +167,32 @@ const initThingModel = (pk, res) => {
   stateMap.value.set(pk, modelItems)
   handleEmits()
 }
+
+const getPk = (item) => {
+  if (item.deviceRadio === '指定设备') {
+    return item.pk
+  }
+  if (props.listeners && props.listeners.length > 0) {
+    const l = props.listeners.find(x => x.type === 'device' && x.pk)
+    return l ? l.pk : null
+  }
+  return null
+}
+
+watch(
+  () => props.listeners,
+  (val) => {
+    if (val) {
+      val.forEach((l) => {
+        if (l.type === 'device' && l.pk) {
+          getProductObjectModel(l.pk)
+        }
+      })
+    }
+  },
+  { deep: true, immediate: true }
+)
+
 const handleEmits = () => {
   const arr = toRaw(list.value).map((m) => {
     let config = m
@@ -146,6 +200,26 @@ const handleEmits = () => {
       config = JSON.parse(config.config || '{}')
     }
     if (!stateMap.value.has(config.pk)) getProductObjectModel(config.pk)
+    if (config.cond === undefined) config.cond = 2
+    
+    // Ensure type is set for conditions
+    if (config.conditions) {
+      config.conditions.forEach((c: any) => {
+        if (!c.type && c.identifier && config.pk) {
+           const groups = stateMap.value.get(config.pk)
+           if (groups) {
+             for (const g of groups) {
+               const found = g.items.find((i: any) => i.identifier === c.identifier)
+               if (found) {
+                 c.type = found.type
+                 break
+               }
+             }
+           }
+        }
+      })
+    }
+    
     return {
       ...config,
     }
@@ -167,6 +241,7 @@ watch(
 const handleAdd = () => {
   list.value.push({
     deviceRadio: '指定设备',
+    cond: 2,
     conditions: [
       {
         parameters: [],
@@ -179,41 +254,224 @@ const handleAdd = () => {
 const removeFliter = (index: number) => {
   list.value.splice(index, 1)
 }
-// 条件
 const comparators = ref([
-  {
-    name: '大于',
-    value: '>',
-  },
   {
     name: '等于',
     value: '==',
-  },
-  {
-    name: '小于',
-    value: '<',
+    description: '字符串相等比较',
   },
   {
     name: '不等于',
     value: '!=',
+    description: '字符串不等比较',
+  },
+  {
+    name: '大于',
+    value: '>',
+    description: '数值大于比较',
+  },
+  {
+    name: '小于',
+    value: '<',
+    description: '数值小于比较',
+  },
+  {
+    name: '大于等于',
+    value: '>=',
+    description: '数值大于等于比较',
+  },
+  {
+    name: '小于等于',
+    value: '<=',
+    description: '数值小于等于比较',
+  },
+  {
+    name: '在..之间',
+    value: 'between',
+    description: '数值范围内，格式: 最小值-最大值 (如: 10-20)',
+  },
+  {
+    name: '不在..之间',
+    value: 'notBetween',
+    description: '数值范围外，格式: 最小值-最大值 (如: 10-20)',
   },
   {
     name: '包含',
-    value: 'in',
+    value: 'contain',
+    description: '字符串包含比较',
   },
   {
     name: '不包含',
-    value: 'notin',
-  },
-  {
-    name: '相似',
-    value: 'like',
-  },
-  {
-    name: '任意',
-    value: '*',
+    value: 'notContain',
+    description: '字符串不包含比较',
   },
 ])
+
+// 根据属性类型获取可用的比较器
+const getAvailableComparators = (pk: string, identifier: string) => {
+  // 确保comparators存在
+  if (!comparators.value || !Array.isArray(comparators.value) || comparators.value.length === 0) {
+    return []
+  }
+
+  // 检查必要的参数
+  if (!pk || !identifier) {
+    return comparators.value
+  }
+
+  // 获取属性的数据类型
+  const propertyType = getPropertyDataType(pk, identifier)
+
+  // 根据数据类型过滤比较器
+  switch (propertyType) {
+    case 'int':
+    case 'float':
+    case 'double':
+    case 'long':
+    case 'int32':
+    case 'int64':
+      // 数值类型：支持所有比较器
+      return comparators.value
+
+    case 'text':
+    case 'string':
+      // 字符串类型：不支持数值比较
+      return comparators.value.filter(c =>
+        !['>', '<', '>=', '<=', 'between', 'notBetween'].includes(c.value)
+      )
+
+    case 'bool':
+    case 'boolean':
+      // 布尔类型：只支持等于和不等于
+      return comparators.value.filter(c =>
+        ['==', '!='].includes(c.value)
+      )
+
+    case 'enum':
+      // 枚举类型：支持等于、不等于、包含
+      return comparators.value.filter(c =>
+        ['==', '!=', 'contain', 'notContain'].includes(c.value)
+      )
+
+    default:
+      // 未知类型：返回基础比较器
+      return comparators.value.filter(c =>
+        ['==', '!=', 'contain', 'notContain'].includes(c.value)
+      )
+  }
+}
+
+// 获取属性的数据类型
+const getPropertyDataType = (pk: string, identifier: string) => {
+  if (!pk || !identifier) return 'string'
+  const groups = stateMap.value.get(pk)
+  if (!groups) return 'string'
+
+  let dataTypeInfo = null
+  for (const group of groups) {
+    const item = group.items.find(i => i.identifier === identifier)
+    if (item) {
+       dataTypeInfo = item.dataType
+       break
+    }
+  }
+
+  if (!dataTypeInfo) return 'string'
+
+  // 如果dataType是对象且包含type字段，则使用type字段的值
+  if (typeof dataTypeInfo === 'object' && dataTypeInfo.type) {
+    const type = dataTypeInfo.type
+    // 标准化数据类型名称
+    switch (type) {
+      case 'int32':
+      case 'int64':
+        return 'int'
+      case 'float':
+      case 'double':
+        return 'float'
+      case 'bool':
+      case 'boolean':
+        return 'bool'
+      case 'text':
+      case 'string':
+        return 'string'
+      case 'enum':
+        return 'enum'
+      case 'array':
+        return 'array'
+      case 'struct':
+        return 'struct'
+      default:
+        return type
+    }
+  }
+
+  // 如果dataType是字符串，直接返回
+  if (typeof dataTypeInfo === 'string') {
+    return dataTypeInfo
+  }
+
+  return 'string'
+}
+
+// 获取参数值输入提示
+const getValuePlaceholder = (comparator, pk?: string, identifier?: string) => {
+  if (!comparator) return '请输入值'
+
+  // 获取属性数据类型以提供更精确的提示
+  const dataType = pk && identifier ? getPropertyDataType(pk, identifier) : 'string'
+
+  switch (comparator) {
+    case 'between':
+    case 'notBetween':
+      if (['int', 'float', 'double', 'long'].includes(dataType)) {
+        return '请输入数值范围，格式: 最小值-最大值 (如: 10-20)'
+      }
+      return '请输入范围值，格式: 最小值-最大值 (如: 10-20)'
+    case 'contain':
+    case 'notContain':
+      return '请输入要匹配的文本内容'
+    case '>':
+    case '<':
+    case '>=':
+    case '<=':
+      if (['int', 'float', 'double', 'long'].includes(dataType)) {
+        return '请输入数值 (如: 100)'
+      }
+      return '请输入数值'
+    case '==':
+    case '!=':
+      switch (dataType) {
+        case 'bool':
+        case 'boolean':
+          return '请输入true或false'
+        case 'int':
+        case 'long':
+          return '请输入整数 (如: 100)'
+        case 'float':
+        case 'double':
+          return '请输入数值 (如: 100.5)'
+        case 'enum':
+          return '请输入枚举值'
+        default:
+          return '请输入比较值'
+      }
+    default:
+      return '请输入值'
+  }
+}
+
+// 比较器变化处理
+const onComparatorChange = (param) => {
+  if (!param) return
+  // 清空之前的值，避免格式不匹配
+  param.value = ''
+}
+
+// 验证参数值
+const validateParamValue = (param, pk?: string) => {
+  if (!param || !param.value || !param.comparator) return true
+}
 
 // 新增条件
 const handleAddCondition = (item: any) => {
@@ -234,16 +492,36 @@ const addParmeter = (cond: any) => {
 const removeParmeter = (index: number, cond: any) => {
   cond.parameters.splice(index, 1)
 }
-const conditionChange = (cond, list, e) => {
-  for (let i in list) {
-    for (let k in list[i].items) {
-      const item = list[i].items[k]
-      if (item.identifier === e) {
-        cond.type = item.type || ''
-        return
+const conditionChange = (cond, e) => {
+  // identifier changed
+  // maybe reset comparator or value
+}
+
+// 监听类型变化
+const onTypeChange = (cond: any) => {
+  cond.identifier = ''
+  cond.value = ''
+  cond.comparator = ''
+}
+
+// 获取选项列表
+const getOptions = (cond: any, item: any) => {
+  const pk = getPk(item)
+  if (!pk) return []
+  const groups = stateMap.value.get(pk)
+  if (!groups) return []
+  
+  if (!cond.type) return []
+  
+  let result: any[] = []
+  groups.forEach((g: any) => {
+    g.items.forEach((i: any) => {
+      if (i.type === cond.type) {
+        result.push(i)
       }
-    }
-  }
+    })
+  })
+  return result
 }
 
 onUnmounted(() => {

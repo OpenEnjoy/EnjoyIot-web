@@ -70,20 +70,20 @@
           </el-form-item>
           <div class="flex justify-center" v-if="handleType != 'view'">
             <el-button type="primary" @click="submitForm"
-              >{{ handleType == 'add' ? '新增' : '保存' }}
+            >{{ handleType == 'add' ? '新增' : '保存' }}
             </el-button>
           </div>
         </el-form>
         <div style="margin: 10px 10px"
-          >设备标签&nbsp;<el-button size="small" @click="addTag">
-            <Icon icon="ep:plus" /> </el-button
+        >设备标签&nbsp;<el-button size="small" @click="addTag">
+          <Icon icon="ep:plus" /> </el-button
         ></div>
         <el-descriptions :column="2" border :labelStyle="{ 'font-weight': 'bold' }">
           <el-descriptions-item
             v-for="tag in state.tags"
             :key="tag.name"
             :label="tag.name + '(' + tag.id + ')'"
-            >{{ tag.value }}</el-descriptions-item
+          >{{ tag.value }}</el-descriptions-item
           >
         </el-descriptions>
       </el-tab-pane>
@@ -119,7 +119,7 @@
                 size="small"
                 type="success"
                 plain
-                >可写</el-button
+              >可写</el-button
               >
             </template>
           </el-table-column>
@@ -171,7 +171,7 @@
           <el-table-column label="操作" width="100">
             <template #default="scope">
               <el-button @click="showInvokeService(scope.row)" type="success" size="small" plain
-                >调用</el-button
+              >调用</el-button
               >
             </template>
           </el-table-column>
@@ -182,25 +182,13 @@
           </el-table-column>
         </el-table>
       </el-tab-pane>
-      <el-tab-pane label="设备通道" name="subChannel" v-if="state.nodeType === 3">
-        <Channel ref="ChannelRef" :device="state.deviceDetail" @player-event="getPlayerData" />
-      </el-tab-pane>
+<!--      <el-tab-pane label="设备通道" name="subChannel" v-if="state.nodeType === 3">-->
+<!--        <Channel ref="ChannelRef" :device="state.deviceDetail" @player-event="getPlayerData" />-->
+<!--      </el-tab-pane>-->
 
-      <el-tab-pane name="sipPlayer" label="直播" v-if="state.nodeType === 3" lazy>
-        <device-live-stream ref="deviceLiveStreamRef" :device="state.deviceDetail" />
-      </el-tab-pane>
-
-      <el-tab-pane name="sipVideo" label="录像" v-if="state.nodeType === 3" lazy>
-        <deviceVideo ref="deviceVideo" :device="state.deviceDetail" />
-      </el-tab-pane>
-
-      <!--      <el-tab-pane name="云端录像" v-if="state.nodeType === 3">-->
-      <!--        <OssRecord ref="OssRecord" :device="state.deviceDetail" />-->
-      <!--      </el-tab-pane>-->
-
-      <el-tab-pane name="sipTalk" label="对讲" v-if="state.nodeType === 3">
-        <siptalk ref="siptalk" :device="state.deviceDetail" />
-      </el-tab-pane>
+<!--      <el-tab-pane name="sipPlayer" label="直播" v-if="state.nodeType === 3" lazy>-->
+<!--        <device-live-stream ref="deviceLiveStreamRef" :device="state.deviceDetail" />-->
+<!--      </el-tab-pane>-->
 
       <el-tab-pane label="日志" name="event" :disabled="inAdd">
         <el-form
@@ -290,7 +278,7 @@
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" size="small" @click="sendDeviceMsg(scope.row)"
-                    >发送</el-button
+                  >发送</el-button
                   >
                 </el-form-item>
               </el-form>
@@ -299,9 +287,29 @@
         </el-table>
       </el-tab-pane>
 
-<!--      <el-tab-pane label="设备配置" name="config" :disabled="inAdd">-->
-<!--        <DeviceConfig v-if="state.activeName === 'config'" :deviceInfo="state" />-->
-<!--      </el-tab-pane>-->
+      <el-tab-pane label="设备配置" name="config" :disabled="inAdd">
+        <div v-if="state.activeName === 'config'" class="px-4">
+          <el-form label-width="90px" class="w-full">
+            <el-form-item label="配置内容">
+              <el-input
+                v-model="state.configContent"
+                type="textarea"
+                :rows="18"
+                placeholder="请输入设备配置(JSON)"
+                :disabled="state.configLoading"
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-space>
+                <el-button @click="formatConfig" :disabled="state.configLoading">格式化</el-button>
+                <el-button type="primary" @click="saveDeviceConfig" :loading="state.configLoading">
+                  保存
+                </el-button>
+              </el-space>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-tab-pane>
 
       <el-tab-pane label="模拟设备" name="simulator" :disabled="inAdd">
         <DeviceSimulator
@@ -311,9 +319,9 @@
         />
       </el-tab-pane>
 
-<!--      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd">-->
-<!--        <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />-->
-<!--      </el-tab-pane>-->
+      <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd"  v-if="state.nodeType === 0">
+        <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />
+      </el-tab-pane>
     </el-tabs>
 
     <el-dialog
@@ -347,7 +355,7 @@
             :loading="state.loading"
             class="title"
             @click="submitPropertyWriteForm"
-            >保存</el-button
+          >保存</el-button
           >
         </div>
       </template>
@@ -393,7 +401,7 @@
             :loading="state.loading"
             class="title"
             @click="submitServiceForm"
-            >确认</el-button
+          >确认</el-button
           >
         </div>
       </template>
@@ -438,7 +446,7 @@
 import { formatDate } from '@/utils/formatTime'
 import { ThingModelApi } from '@/api/eiot/thingmodel'
 import { ProductApi, ProductVO } from '@/api/eiot/product'
-import { DeviceInfoApi, DeviceInfoVO } from '@/api/eiot/deviceinfo'
+import { DeviceInfoApi } from '@/api/eiot/deviceinfo/index'
 
 import {
   deviceLogs,
@@ -449,15 +457,15 @@ import {
 } from '@/api/eiot/deviceinfo/devices.api'
 
 import PropertyTable from './modules/PropertyTable.vue'
-import SubEquipment from './modules/detail/subEquipment.vue'
 
 import PropertyChart from './modules/PropertyChart.vue'
-import DeviceConfig from './modules/detail/DeviceConfig.vue'
-import Map from '@/components/Map/index.vue'
+
 import productList from './product-list.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
+import SubEquipment from "./modules/detail/subEquipment.vue";
 import { ref } from 'vue'
+import request from '@/config/axios'
 
 const { t } = useI18n() // 国际化
 const route = useRoute()
@@ -509,9 +517,7 @@ const state = reactive<any>({
     value: [{ required: true, message: '请输入标签值', trigger: 'blur' }]
   },
   deviceId: '',
-  deviceDetail: {
-    firmVersion: 1.0
-  },
+  deviceDetail: {},
   thingModel: null,
   modelFunctions: [],
   properties: [],
@@ -539,6 +545,9 @@ const state = reactive<any>({
     name: '',
     data: []
   },
+  // 设备配置
+  configContent: '',
+  configLoading: false,
   dataType: '',
   currHistoryProperty: {},
   historyTime: [
@@ -586,6 +595,9 @@ const state = reactive<any>({
     ]
   }
 })
+
+
+
 const selectProduct = async () => {
   await productListRef.value.open()
 }
@@ -897,6 +909,8 @@ const handleClick = (tab) => {
     })
   } else if (tab.paneName == 'event') {
     getEvents()
+  } else if (tab.paneName === 'config') {
+    loadDeviceConfig()
   } else {
     getdata()
   }
@@ -917,10 +931,10 @@ const submitPropertyWriteForm = () => {
     deviceId: state.deviceId,
     args: prop
   }).then(() => {
-      ElMessage({
-        type: 'success',
-        message: '操作成功'
-      })
+    ElMessage({
+      type: 'success',
+      message: '操作成功'
+    })
 
   })
 }
@@ -972,32 +986,51 @@ const sendDeviceMsg = (fun) => {
     let val = fun.value
     switch (fun.dataTypeName) {
       case 'int32':
-        if (val < fun.raw.dataType.specs.min || val > fun.raw.dataType.specs.max) {
+        val = parseInt(val, 10)
+        if (isNaN(val) || val < Number(fun.raw.dataType.specs.min) || val > Number(fun.raw.dataType.specs.max)) {
           ElMessage({
             type: 'info',
-            message: '数据类型错误'
+            message: `请输入有效的整数（范围 ${fun.raw.dataType.specs.min} 到 ${fun.raw.dataType.specs.max}）`
           })
           return
         }
         break
       case 'bool':
+
         break
       case 'enum':
         if (!(val in fun.raw.dataType.specs)) {
           ElMessage({
             type: 'info',
-            message: '数据类型错误'
+            message: `请输入有效的枚举值（可选值: ${Object.keys(fun.raw.dataType.specs).join(', ')})`
           })
           return
         }
         break
       case 'float':
         val = parseFloat(val)
+        if (isNaN(val)) {
+          ElMessage({
+            type: 'error',
+            message: '请输入有效的浮点数'
+          })
+          return
+        }
         break
     }
     data[fun.identifier] = val
   } else {
-    data = JSON.parse(fun.content)
+    try {
+      data = JSON.parse(fun.content)
+      console.log('Parsed JSON data:', data)
+    } catch (e) {
+      ElMessage({
+        type: 'error',
+        message: '无效的 JSON 格式'
+      })
+      console.error('JSON parse error:', e)
+      return
+    }
   }
 
   deviceSimulateSend({
@@ -1014,6 +1047,73 @@ const sendDeviceMsg = (fun) => {
     })
   })
 }
+
+// 加载设备配置
+const loadDeviceConfig = async () => {
+  if (!state.deviceId) return
+  state.configLoading = true
+  try {
+    const res: any = await request.post({
+      url: '/eiot/device/config/get',
+      data: { deviceId: state.deviceId }
+    })
+    const cfg = res?.data?.config ?? res?.config ?? ''
+    if (cfg) {
+      try {
+        state.configContent = JSON.stringify(JSON.parse(cfg), null, 2)
+      } catch {
+        state.configContent = cfg
+      }
+    } else {
+      state.configContent = '{}'
+    }
+  } catch (e) {
+    ElMessage.error('获取设备配置失败')
+  } finally {
+    state.configLoading = false
+  }
+}
+
+// 保存设备配置
+const saveDeviceConfig = async () => {
+  if (!state.deviceId) {
+    ElMessage.warning('设备ID缺失')
+    return
+  }
+  let formatted = state.configContent
+  try {
+    const obj = JSON.parse(state.configContent || '{}')
+    formatted = JSON.stringify(obj)
+  } catch (e) {
+    ElMessage.error('配置不是合法的 JSON')
+    return
+  }
+  state.configLoading = true
+  try {
+    await request.post({
+      url: '/eiot/device/config/save',
+      data: { deviceId: state.deviceId, config: formatted }
+    })
+    ElMessage.success('保存成功')
+    loadDeviceConfig()
+  } catch (e) {
+    ElMessage.error('保存失败')
+  } finally {
+    state.configLoading = false
+  }
+}
+
+// 格式化配置
+const formatConfig = () => {
+  try {
+    const obj = JSON.parse(state.configContent || '{}')
+    state.configContent = JSON.stringify(obj, null, 2)
+    ElMessage.success('格式化完成')
+  } catch (e) {
+    ElMessage.error('格式化失败：内容不是合法 JSON')
+  }
+}
+
 const closeDialog = () => {
   state.propertyWriteFormVisible = false
   state.serviceFormVisible = false

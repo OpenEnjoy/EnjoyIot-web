@@ -53,7 +53,7 @@ const submitThingModelChange = () => {
     model:JSON.stringify(toRaw(thingModel.value)),
   } as ThingModelVO
   ThingModelApi.saveThingModel(data).then((res) => {
-    if (res.data) {
+    if (res) {
       ElMessage.info({
         type: 'success',
         message: '保存成功',

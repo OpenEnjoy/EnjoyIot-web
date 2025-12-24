@@ -13,10 +13,20 @@
     :total="state.total"
     v-model:page="state.page"
     v-model:query="state.query"
-  />
+  >
+    <template #status="scope">
+      <el-switch
+        v-model="scope.row.status"
+        :active-value="0"
+        :inactive-value="1"
+        @change="handleStatusChange(scope.row)"
+      />
+    </template>
+  </yt-crud>
 </template>
 
 <script lang="ts" setup>
+import { nextTick } from 'vue'
 import { IColumn } from '@/components/common/types/tableCommon'
 import { getConfigList, saveConfig, deleteConfig } from '@/api/eiot/alarm/alarm.api'
 import { getRuleList } from '@/api/eiot/ruleEngine/rule.api'
@@ -27,7 +37,7 @@ import {getTemplatesList} from "@/api/eiot/channel/templates.api";
 const state = reactive({
   page: {
     pageSize: 10,
-    pageNum: 1,
+    pageNo: 1,
   },
   total: 0,
   loading: false,
@@ -89,6 +99,7 @@ const column = ref<IColumn[]>([{
   key: 'status',
   tableWidth: 120,
   type: 'switch',
+  slot: true,
   componentProps: {
     activeValue: 0,
     inactiveValue: 1,
@@ -103,16 +114,18 @@ const column = ref<IColumn[]>([{
   }
 }])
 
+const isInitialized = ref(false) // 标记是否已初始化完成
+
 const getDict = async () => {
   let options: any[] = []
   const res1 = await getRuleList({
     pageSize: 100,
-    pageNum: 1,
-    tye: 'scene',
+    pageNo: 1,
+    typ: 'scene',
   })
   const res2 = await getRuleList({
     pageSize: 100,
-    pageNum: 1,
+    pageNo: 1,
     typ: 'flow',
   })
   options = [...res1.list, ...res2.list]
@@ -140,6 +153,10 @@ const getData =  () => {
   }).then((res) => {
     data.value = res.list
     state.total = res.total
+    // 数据加载完成后，标记为已初始化
+    nextTick(() => {
+      isInitialized.value = true
+    })
   }).finally(() => {
     state.loading = false
   })
@@ -162,6 +179,23 @@ const handleDelete =  (row: any) => {
   deleteConfig(row.id).then(res => {
       ElMessage.success('删除成功!')
       getData()
+  }).finally(() => {
+    state.loading = false
+  })
+}
+// 状态变更（实时保存）
+const handleStatusChange = (row: any) => {
+  // 确保有 id 且已初始化完成才保存（避免初始化时误触发创建）
+  if (!row || !row.id || !isInitialized.value) {
+    return
+  }
+  state.loading = true
+  saveConfig(toRaw(row)).then(res => {
+    ElMessage.success('状态更新成功!')
+  }).catch(err => {
+    // 保存失败，恢复原值
+    row.status = row.status === 0 ? 1 : 0
+    ElMessage.error('状态更新失败，请重试')
   }).finally(() => {
     state.loading = false
   })

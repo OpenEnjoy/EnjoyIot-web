@@ -182,6 +182,29 @@ const getInfo = (model: any) => {
       params: JSON.stringify(p.dataType?.specs || {})
     })),
     // ... existing event and service mappings ...
+    ...modelObj.events.map(e => ({
+        raw: e,
+        type: 'event',
+        name: e.name,
+        description: e.description,
+        identifier: e.identifier,
+        dataTypeName: '-',
+        params: JSON.stringify(e.outputData),
+      })),
+
+    ...modelObj.services.map(s => ({
+        raw: s,
+        type: 'service',
+        name: s.name,
+        description: s.description,
+        identifier: s.identifier,
+        dataTypeName: '-',
+        params:
+          '输入:' +
+          JSON.stringify(s.inputData) +
+          ',输出:' +
+          JSON.stringify(s.outputData),
+    })),
   ]
 
   data.value = modelFuncs

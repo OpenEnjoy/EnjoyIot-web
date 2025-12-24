@@ -47,7 +47,7 @@ const column: IColumn[] = [{
   slot: true,
 }, {
   label: '发送日期',
-  key: 'createAt',
+  key: 'createTime',
   type: 'date',
 }]
 const state = reactive({
