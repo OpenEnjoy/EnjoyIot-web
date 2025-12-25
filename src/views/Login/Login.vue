@@ -25,7 +25,7 @@
             class="m-auto h-[calc(100%-60px)] w-[100%] flex items-center at-2xl:max-w-500px at-lg:max-w-500px at-md:max-w-500px at-xl:max-w-500px"
           >
             <!-- 账号登录 -->
-            <LoginForm class="m-auto h-auto p-50px lt-xl:(rounded-3xl light:bg-white)" />
+            <LoginForm class="m-auto h-auto login-form lt-xl:(rounded-3xl light:bg-white)" />
             <!-- 忘记密码 -->
             <!-- <ForgetPasswordForm class="m-auto h-auto p-20px lt-xl:(rounded-3xl light:bg-white)" /> -->
           </div>
@@ -93,6 +93,9 @@ $prefix-cls: #{$namespace}-login;
     }
     .login-r {
       background-color: #fff;
+      .login-form {
+        padding: 50px;
+      }
     }
   }
   &__left {
