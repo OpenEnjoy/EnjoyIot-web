@@ -98,7 +98,7 @@
           <el-input v-model="form.name" placeholder="请输入组件名称" />
         </el-form-item>
         <el-form-item label="组件类型" prop="type">
-          {{ form.type }}
+          <el-input v-model="form.type" :disabled="!!form.id" placeholder="请输入组件类型,请确保唯一" />
         </el-form-item>
         <el-form-item label="组件配置" prop="config">
           <el-input
