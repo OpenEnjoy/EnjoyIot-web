@@ -36,9 +36,11 @@
         <el-form-item>
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-          <el-button type="primary" plain @click="handleAdd" v-hasPermi="['eiot:component:create']">
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
-          </el-button>
+<!--          组件不允许手动新增,组件运行时会自动注册-->
+
+<!--          <el-button type="primary" plain @click="handleAdd" v-hasPermi="['eiot:component:create']">-->
+<!--            <Icon icon="ep:plus" class="mr-5px" /> 新增-->
+<!--          </el-button>-->
         </el-form-item>
       </el-form>
     </ContentWrap>
