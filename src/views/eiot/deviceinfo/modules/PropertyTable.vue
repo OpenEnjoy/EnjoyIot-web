@@ -49,7 +49,7 @@ const getData = async () => {
     start: state.value.historyTime[0].getTime(),
     end: state.value.historyTime[1].getTime(),
   }).then((res) => {
-    state.value.data = res.data
+    state.value.data = res
   }).finally(() => {
     loading.value = false
   })
