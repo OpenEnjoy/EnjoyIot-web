@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import {deviceSimulateSend} from "@/api/eiot/deviceinfo/devices.api";
+import { deviceSimulateSend, propertyGet, propertySet } from "@/api/eiot/deviceinfo/devices.api";
 
 export default {
   name: 'deviceSimulatorProperties',
@@ -89,16 +89,14 @@ export default {
       })
     },
     sendAllPropertiesGet() {
-      let prop = {}
+      let prop = []
       let allProperties = this.properties.filter((o) => o.type && o.type == 'property')
       allProperties.forEach((fun) => {
-        if (fun.value) {
-          prop[fun.identifier] = fun.value
-        }
+        prop.push(fun.identifier)
       })
-      propertySet({
+      propertyGet({
         deviceId: this.deviceId,
-        args: prop,
+        propertyNames: prop,
       }).then((res) => {
         if (res.code === 200) {
           ElMessage({
