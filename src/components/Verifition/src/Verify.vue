@@ -145,7 +145,7 @@ export default {
 <style>
 .verifybox {
   position: relative;
-  top: 50%;
+  top: 20%;
   left: 50%;
   background-color: #fff;
   border: 1px solid #e4e7eb;
