@@ -331,6 +331,13 @@
         </div>
       </el-tab-pane>
 
+      <el-tab-pane label="设备影子" name="shadow" :disabled="inAdd">
+        <DeviceShadow
+          v-if="state.activeName === 'shadow' && state.deviceDetail.id"
+          :device-id="state.deviceDetail.id"
+        />
+      </el-tab-pane>
+
       <el-tab-pane label="模拟设备" name="simulator" :disabled="inAdd">
         <DeviceSimulator
           v-if="state.activeName === 'simulator'"
@@ -632,12 +639,9 @@ import PropertyTable from './modules/PropertyTable.vue'
 import PropertyChart from './modules/PropertyChart.vue'
 
 import productList from './product-list.vue'
-import Map from '@/components/LeafletMap/index.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
 import SubEquipment from "./modules/detail/subEquipment.vue";
-import DeviceAlertConfig from '@/views/eiot/devicealert/config.vue'
-import { getDeviceAlertRecordListByDevice, DeviceAlertRecordVO } from '@/api/eiot/devicealert/devicealert.api'
 import { ref } from 'vue'
 import request from '@/config/axios'
 
@@ -1587,28 +1591,28 @@ const loadAlertRecords = async () => {
   try {
     const res: any = await getDeviceAlertRecordListByDevice(state.deviceId as number)
     let records = res || []
-    
+
     // 按告警名称筛选（模糊匹配）
     if (state.alertRecordQuery.name) {
-      records = records.filter((item: DeviceAlertRecordVO) => 
+      records = records.filter((item: DeviceAlertRecordVO) =>
         item.name?.toLowerCase().includes(state.alertRecordQuery.name.toLowerCase())
       )
     }
-    
+
     // 按告警等级筛选
     if (state.alertRecordQuery.level) {
-      records = records.filter((item: DeviceAlertRecordVO) => 
+      records = records.filter((item: DeviceAlertRecordVO) =>
         item.level === state.alertRecordQuery.level
       )
     }
-    
+
     // 按状态筛选
     if (state.alertRecordQuery.alertState) {
-      records = records.filter((item: DeviceAlertRecordVO) => 
+      records = records.filter((item: DeviceAlertRecordVO) =>
         item.alertState === state.alertRecordQuery.alertState
       )
     }
-    
+
     state.alertRecords = records
     state.alertRecordTotal = records.length
   } catch (e) {
