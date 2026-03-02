@@ -311,6 +311,13 @@
         </div>
       </el-tab-pane>
 
+      <el-tab-pane label="设备影子" name="shadow" :disabled="inAdd">
+        <DeviceShadow
+          v-if="state.activeName === 'shadow' && state.deviceDetail.id"
+          :device-id="state.deviceDetail.id"
+        />
+      </el-tab-pane>
+
       <el-tab-pane label="模拟设备" name="simulator" :disabled="inAdd">
         <DeviceSimulator
           v-if="state.activeName === 'simulator'"
@@ -464,6 +471,7 @@ import productList from './product-list.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
 import SubEquipment from "./modules/detail/subEquipment.vue";
+import DeviceShadow from './modules/detail/DeviceShadow.vue'
 import { ref } from 'vue'
 import request from '@/config/axios'
 
