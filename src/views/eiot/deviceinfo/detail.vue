@@ -319,6 +319,67 @@
         />
       </el-tab-pane>
 
+      <el-tab-pane label="告警配置" name="alertConfig" :disabled="inAdd">
+        <DeviceAlertConfig
+          v-if="state.activeName === 'alertConfig'"
+          :deviceId="state.deviceId"
+        />
+      </el-tab-pane>
+
+      <el-tab-pane label="告警记录" name="alertRecord" :disabled="inAdd">
+        <div v-if="state.activeName === 'alertRecord'" class="alert-record-tab">
+          <el-form :inline="true" class="mb-4">
+            <el-form-item label="状态筛选">
+              <el-select v-model="state.alertRecordFilter" style="width: 150px" @change="loadAlertRecords">
+                <el-option label="全部" value="" />
+                <el-option label="告警" value="alert" />
+                <el-option label="已恢复" value="recover" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="loadAlertRecords">刷新</el-button>
+            </el-form-item>
+          </el-form>
+          <el-table :data="state.alertRecords" border v-loading="state.alertRecordLoading" style="width: 100%">
+            <el-table-column prop="name" label="告警名称" width="150" />
+            <el-table-column prop="level" label="告警等级" width="100">
+              <template #default="scope">
+                <el-tag :type="getLevelType(scope.row.level)">{{ scope.row.level }}级</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="alertState" label="状态" width="100">
+              <template #default="scope">
+                <el-tag :type="scope.row.alertState === 'alert' ? 'danger' : 'success'">
+                  {{ scope.row.alertState === 'alert' ? '告警' : '已恢复' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="alertTime" label="告警时间" width="180">
+              <template #default="scope">
+                {{ formatDate(scope.row.alertTime) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="recoverTime" label="恢复时间" width="180">
+              <template #default="scope">
+                {{ scope.row.recoverTime ? formatDate(scope.row.recoverTime) : '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="details" label="详情" />
+          </el-table>
+          <div class="mt-4 flex justify-end">
+            <el-pagination
+              v-model:current-page="state.alertRecordPage"
+              v-model:page-size="state.alertRecordPageSize"
+              :page-sizes="[10, 20, 50]"
+              layout="total, sizes, pager"
+              :total="state.alertRecordTotal"
+              @size-change="loadAlertRecords"
+              @current-change="loadAlertRecords"
+            />
+          </div>
+        </div>
+      </el-tab-pane>
+
       <el-tab-pane label="网关子设备" name="subEquipment" :disabled="inAdd"  v-if="state.nodeType === 0">
         <SubEquipment v-if="state.activeName === 'subEquipment'" :deviceInfo="state" />
       </el-tab-pane>
@@ -464,6 +525,8 @@ import productList from './product-list.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
 import SubEquipment from "./modules/detail/subEquipment.vue";
+import DeviceAlertConfig from '@/views/eiot/devicealert/config.vue'
+import { getDeviceAlertRecordListByDevice, DeviceAlertRecordVO } from '@/api/eiot/devicealert/devicealert.api'
 import { ref } from 'vue'
 import request from '@/config/axios'
 
@@ -548,6 +611,13 @@ const state = reactive<any>({
   // 设备配置
   configContent: '',
   configLoading: false,
+  // 告警记录
+  alertRecords: [] as DeviceAlertRecordVO[],
+  alertRecordLoading: false,
+  alertRecordFilter: '',
+  alertRecordPage: 1,
+  alertRecordPageSize: 10,
+  alertRecordTotal: 0,
   dataType: '',
   currHistoryProperty: {},
   historyTime: [
@@ -1148,6 +1218,36 @@ const formattedProductName = computed(() => {
     ? `${state?.product?.name}(${state.deviceDetail?.productKey})`
     : ''
 })
+
+const getLevelType = (level: string) => {
+  const levelMap: Record<string, string> = {
+    '1': 'danger',
+    '2': 'warning',
+    '3': 'info',
+    '4': '',
+    '5': 'info'
+  }
+  return levelMap[level] || ''
+}
+
+const loadAlertRecords = async () => {
+  if (!state.deviceId) return
+  state.alertRecordLoading = true
+  try {
+    const res: any = await getDeviceAlertRecordListByDevice(state.deviceId as number)
+    let records = res || []
+    if (state.alertRecordFilter) {
+      records = records.filter((item: DeviceAlertRecordVO) => item.alertState === state.alertRecordFilter)
+    }
+    state.alertRecords = records
+    state.alertRecordTotal = records.length
+  } catch (e) {
+    ElMessage.error('获取告警记录失败')
+  } finally {
+    state.alertRecordLoading = false
+  }
+}
+
 getdata()
 logSearch()
 </script>
@@ -1168,5 +1268,8 @@ logSearch()
   white-space: pre-wrap;
   font-size: 12px;
   line-height: 14px;
+}
+.alert-record-tab {
+  padding: 10px;
 }
 </style>

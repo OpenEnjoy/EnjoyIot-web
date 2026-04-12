@@ -9,6 +9,7 @@ enum Api {
   configListByDevice = '/eiot/device-alert/config/list-by-device',
   configListByProduct = '/eiot/device-alert/config/list-by-product',
   recordList = '/eiot/device-alert/record/page',
+  recordListByDevice = '/eiot/device-alert/record/list-by-device',
 }
 
 export interface ConditionVO {
@@ -79,4 +80,8 @@ export const getDeviceAlertConfigListByProduct = (productId: number) => {
 
 export const getDeviceAlertRecordPage = (data) => {
   return request.get({ url: Api.recordList, params: data })
+}
+
+export const getDeviceAlertRecordListByDevice = (deviceId: number) => {
+  return request.get({ url: Api.recordListByDevice, params: { deviceId } })
 }

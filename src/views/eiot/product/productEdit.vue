@@ -120,6 +120,12 @@
 <!--      <el-tab-pane label="显示模型配置" :disabled="!disabled">-->
 <!--        <ModelDetail :productInfo="form" />-->
 <!--      </el-tab-pane>-->
+      <el-tab-pane label="告警配置" :disabled="!disabled">
+        <ProductAlertConfig
+          v-if="productId"
+          :productId="productId"
+        />
+      </el-tab-pane>
 
     </el-tabs>
   </div>
@@ -134,6 +140,7 @@ import ModelDetail from './modules/modelDetail.vue'
 import VueJsonEditor from 'vue3-ts-jsoneditor'
 
 import ThingModel from './modules/thingModel.vue'
+import ProductAlertConfig from '@/views/eiot/productalert/config.vue'
 import {ComponentInternalInstance, toRaw} from 'vue'
 
 const {t} = useI18n() // 国际化
@@ -149,6 +156,8 @@ const ruleFormRef = ref()
 
 const disabledView = ref(false)
 const disabled = ref(false)
+
+const productId = ref<number | undefined>(undefined)
 
 const tabPosition = ref('left')
 
@@ -355,10 +364,11 @@ const initData = async () => {
     form.value.productKey = randomString(16);
     form.value.dnTyp = 1; // 设置默认值，假设默认值为1
   } else {
-    const productId = route.params.id;
-    if (productId) {
+    const id = route.params.id;
+    if (id) {
+      productId.value = Number(id)
       try {
-        const res = await ProductApi.getProduct(productId);
+        const res = await ProductApi.getProduct(id);
         form.value = res;
       } catch (error) {
         console.error('Error fetching product data:', error);
