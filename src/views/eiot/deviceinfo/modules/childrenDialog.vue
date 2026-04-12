@@ -59,7 +59,7 @@ const state = reactive({
 })
 const columns = ref<IColumn[]>([
   {
-    label: '设备名称',
+    label: '别名',
     key: 'name',
   },
   {
@@ -68,7 +68,7 @@ const columns = ref<IColumn[]>([
     tableWidth: 120,
   },
   {
-    label: '设备DN',
+    label: '设备标识',
     key: 'dn',
     tableWidth: 150,
   },

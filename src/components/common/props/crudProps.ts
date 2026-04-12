@@ -92,6 +92,8 @@ export const formProps = {
   gutter: propTypes.number.def(0),
   colSpan: propTypes.number.def(24),
   loading: propTypes.bool.def(false),
+  editCallback: propTypes.func,
+  addCallback: propTypes.func,
 }
 
 export const crudProps = {
@@ -118,4 +120,6 @@ export const crudProps = {
   tableProps: Object,
   formProps: Object,
   addFunc: propTypes.func,
+  editCallback: propTypes.func,
+  addCallback: propTypes.func,
 }

@@ -12,9 +12,9 @@
     >
       <el-table-column type="selection" width="55" />
       <el-table-column label="序号" type="index" align="center" width="80" />
-      <el-table-column label="设备名称" property="name" align="center" width="180" />
+      <el-table-column label="别名" property="name" align="center" width="180" />
       <el-table-column label="产品" property="productName" align="center" width="180" />
-      <el-table-column label="设备DN" property="dn" align="center" />
+      <el-table-column label="设备标识" property="dn" align="center" />
       <el-table-column label="状态" align="center">
         <template v-slot="scope">
           <el-tag v-if="scope.row.state === 1" type="success" size="small">在线</el-tag>
@@ -47,7 +47,7 @@
     <!-- 添加子设备对话框 -->
     <el-dialog v-model="addDeviceDialogVisible" title="添加子设备" width="800px">
       <el-form :inline="true" :model="searchForm" class="demo-form-inline">
-        <el-form-item label="设备名称">
+        <el-form-item label="别名">
           <el-input v-model="searchForm.name" placeholder="请输入产品名称" />
         </el-form-item>
         <el-form-item label="产品名称">
@@ -67,9 +67,9 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column label="设备名称" prop="name" />
+        <el-table-column label="别名" prop="name" />
         <el-table-column label="产品名称" prop="productName" />
-        <el-table-column label="设备DN" prop="dn" />
+        <el-table-column label="设备标识" prop="dn" />
       </el-table>
       
       <div class="mt-[20px]">

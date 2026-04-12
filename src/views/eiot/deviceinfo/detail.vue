@@ -14,7 +14,7 @@
           <el-form-item v-if="inAdd != true" label="设备id" prop="id">
             <el-input v-model="state.deviceDetail.id" :disabled="true" />
           </el-form-item>
-          <el-form-item label="设备名称" prop="name">
+          <el-form-item label="别名" prop="name">
             <el-input v-model="state.deviceDetail.name" :disabled="!inEdit" />
           </el-form-item>
           <el-form-item label="productKey" prop="productKey">
@@ -328,16 +328,28 @@
 
       <el-tab-pane label="告警记录" name="alertRecord" :disabled="inAdd">
         <div v-if="state.activeName === 'alertRecord'" class="alert-record-tab">
-          <el-form :inline="true" class="mb-4">
-            <el-form-item label="状态筛选">
-              <el-select v-model="state.alertRecordFilter" style="width: 150px" @change="loadAlertRecords">
+          <el-form :inline="true" :model="state.alertRecordQuery" class="mb-4">
+            <el-form-item label="告警名称">
+              <el-input v-model="state.alertRecordQuery.name" placeholder="请输入告警名称" clearable style="width: 150px" />
+            </el-form-item>
+            <el-form-item label="告警等级">
+              <el-select v-model="state.alertRecordQuery.level" placeholder="请选择" clearable style="width: 120px">
+                <el-option label="全部" value="" />
+                <el-option label="1级" value="1" />
+                <el-option label="2级" value="2" />
+                <el-option label="3级" value="3" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="状态">
+              <el-select v-model="state.alertRecordQuery.alertState" style="width: 120px" clearable>
                 <el-option label="全部" value="" />
                 <el-option label="告警" value="alert" />
                 <el-option label="已恢复" value="recover" />
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="loadAlertRecords">刷新</el-button>
+              <el-button type="primary" icon="Search" @click="loadAlertRecords">搜索</el-button>
+              <el-button @click="resetAlertRecordQuery">重置</el-button>
             </el-form-item>
           </el-form>
           <el-table :data="state.alertRecords" border v-loading="state.alertRecordLoading" style="width: 100%">
@@ -614,7 +626,11 @@ const state = reactive<any>({
   // 告警记录
   alertRecords: [] as DeviceAlertRecordVO[],
   alertRecordLoading: false,
-  alertRecordFilter: '',
+  alertRecordQuery: {
+    name: '',
+    level: '',
+    alertState: ''
+  },
   alertRecordPage: 1,
   alertRecordPageSize: 10,
   alertRecordTotal: 0,
@@ -693,7 +709,7 @@ const generateSerialNo = () => {
 const editFormRef = ref()
 const editRules = reactive({
   productKey: [{ required: true, message: '产品KEY不能为空', trigger: 'blur' }],
-  name: [{ required: true, message: '设备名称不能为空', trigger: 'blur' }],
+  name: [{ required: true, message: '别名不能为空', trigger: 'blur' }],
   dn: [{ required: true, message: '唯一吗不能为空', trigger: 'blur' }],
   serialNo: [{ required: true, message: '序列号不能为空', trigger: 'blur' }]
 })
@@ -977,10 +993,12 @@ const handleClick = (tab) => {
     nextTick(() => {
       channelRef.value.getList()
     })
-  } else if (tab.paneName == 'event') {
+  } else if (tab.name === 'event') {
     getEvents()
-  } else if (tab.paneName === 'config') {
+  } else if (tab.name === 'config') {
     loadDeviceConfig()
+  } else if (tab.name === 'alertRecord') {
+    loadAlertRecords()
   } else {
     getdata()
   }
@@ -1236,9 +1254,28 @@ const loadAlertRecords = async () => {
   try {
     const res: any = await getDeviceAlertRecordListByDevice(state.deviceId as number)
     let records = res || []
-    if (state.alertRecordFilter) {
-      records = records.filter((item: DeviceAlertRecordVO) => item.alertState === state.alertRecordFilter)
+    
+    // 按告警名称筛选（模糊匹配）
+    if (state.alertRecordQuery.name) {
+      records = records.filter((item: DeviceAlertRecordVO) => 
+        item.name?.toLowerCase().includes(state.alertRecordQuery.name.toLowerCase())
+      )
     }
+    
+    // 按告警等级筛选
+    if (state.alertRecordQuery.level) {
+      records = records.filter((item: DeviceAlertRecordVO) => 
+        item.level === state.alertRecordQuery.level
+      )
+    }
+    
+    // 按状态筛选
+    if (state.alertRecordQuery.alertState) {
+      records = records.filter((item: DeviceAlertRecordVO) => 
+        item.alertState === state.alertRecordQuery.alertState
+      )
+    }
+    
     state.alertRecords = records
     state.alertRecordTotal = records.length
   } catch (e) {
@@ -1246,6 +1283,16 @@ const loadAlertRecords = async () => {
   } finally {
     state.alertRecordLoading = false
   }
+}
+
+// 重置告警记录查询条件
+const resetAlertRecordQuery = () => {
+  state.alertRecordQuery = {
+    name: '',
+    level: '',
+    alertState: ''
+  }
+  loadAlertRecords()
 }
 
 getdata()

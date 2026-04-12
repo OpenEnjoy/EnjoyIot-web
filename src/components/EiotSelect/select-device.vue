@@ -181,12 +181,12 @@ const column = ref<IColumn[]>([
     rules: [{ required: false, message: 'name' }],
   },
   {
-    label: '设备DN',
+    label: '设备标识',
     key: 'dn',
     componentProps: {
       placeholder: '一般为设备mac',
     },
-    rules: [{ required: true, message: '设备DN不能为空' }],
+    rules: [{ required: true, message: '设备标识不能为空' }],
   },
   //   {
   //   label: '分组',

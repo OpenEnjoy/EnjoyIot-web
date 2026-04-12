@@ -238,6 +238,14 @@ const column = ref<IColumn[]>([
       placeholder: '告警触发后多少秒内不重复告警'
     }
   },
+  {
+    label: '告警恢复',
+    key: 'enableRecover',
+    hide: true,
+    type: 'switch',
+    slot: true,
+    componentProps: { activeValue: true, inactiveValue: false },
+  },
 ])
 
 const data = ref([])
@@ -498,6 +506,9 @@ const onAddCallback = async (data: any) => {
   currentEditId.value = null
   tempConditions.logic = 'AND'
   tempConditions.items = []
+  data.durationSec = 0
+  data.silentSec = 0
+  data.enableRecover = true
   await loadProductProperties()
   return data
 }
@@ -510,6 +521,15 @@ const onEditCallback = async (data: any) => {
   } else {
     tempConditions.logic = 'AND'
     tempConditions.items = []
+  }
+  if (data.triggerOptions) {
+    data.durationSec = data.triggerOptions.durationSec ?? 0
+    data.silentSec = data.triggerOptions.silentSec ?? 0
+    data.enableRecover = data.triggerOptions.enableRecover ?? true
+  } else {
+    data.durationSec = 0
+    data.silentSec = 0
+    data.enableRecover = true
   }
   await loadProductProperties()
   return data
@@ -538,18 +558,16 @@ const onSave = ({ data: saveData, cancel }: any) => {
   }
 
   state.loading = true
-  const triggerOptions: any = {}
-  if (saveData.durationSec && saveData.durationSec > 0) {
-    triggerOptions.durationSec = Number(saveData.durationSec)
-  }
-  if (saveData.silentSec && saveData.silentSec > 0) {
-    triggerOptions.silentSec = Number(saveData.silentSec)
+  const triggerOptions: any = {
+    durationSec: Number(saveData.durationSec) || 0,
+    silentSec: Number(saveData.silentSec) || 0,
+    enableRecover: saveData.enableRecover !== false,
   }
 
   const configData: any = {
     ...saveData,
     conditions: tempConditions.items.length > 0 ? tempConditions.items : undefined,
-    triggerOptions: Object.keys(triggerOptions).length > 0 ? triggerOptions : undefined,
+    triggerOptions: triggerOptions,
   }
 
   if (!saveData.id) {

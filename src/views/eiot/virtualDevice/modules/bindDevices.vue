@@ -4,7 +4,7 @@
           <el-col :span="12">
             <el-form :inline="true" :model="state.query" class="user-search">
               <el-form-item label="设备">
-                <el-input v-model="state.query.dn"  size="small" placeholder="输入设备DN" />
+                <el-input v-model="state.query.dn"  size="small" placeholder="输入设备标识" />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" icon="Search" size="small" @click="search">搜索</el-button>
@@ -19,8 +19,8 @@
               <el-table-column sortable label="产品" width="100" prop="product.name" />
               <el-table-column sortable label="产品Key" prop="productKey" />
               <el-table-column sortable label="设备ID" prop="id" />
-              <el-table-column sortable label="设备dn" prop="dn" />
-              <el-table-column sortable label="设备名称" prop="name" />
+              <el-table-column sortable label="设备标识" prop="dn" />
+              <el-table-column sortable label="别名" prop="name" />
               <el-table-column label="操作" width="150">
                 <template #default="scope">
                   <el-button type="primary" size="small"  @click="selectDevice(scope.row)">选择</el-button>

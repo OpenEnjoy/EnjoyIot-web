@@ -117,7 +117,7 @@ watch(() => props.column, (newV) => {
   immediate: true,
   deep: true,
 })
-const emits = defineEmits(['change', 'onLoad', 'update:query', 'saveFun', 'rowClick', 'delFun', 'openBeforeFun', 'exportFun', 'update:page'])
+const emits = defineEmits(['change', 'onLoad', 'update:query', 'saveFun', 'rowClick', 'delFun', 'openBeforeFun', 'exportFun', 'update:page', 'editCallback', 'addCallback'])
 const ytTableRef = ref()
 const getTableRef = () => {
   return ytTableRef.value
@@ -209,6 +209,8 @@ watch(props, (newV) => {
     ...bind.formBind,
     ...props.formProps,
   }
+  if (props.editCallback) bind.formBind.editCallback = props.editCallback
+  if (props.addCallback) bind.formBind.addCallback = props.addCallback
 }, {
   immediate: true,
   deep: true,

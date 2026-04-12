@@ -89,9 +89,16 @@ export default defineComponent({
       }
     }
     // 打开弹窗
-    const openDialog = (type: TDialogType, data?: Recordable<string, any>) => {
+    const openDialog = async (type: TDialogType, data?: Recordable<string, any>) => {
       dialogObj.type = type
       formObj.data = cloneDeep(toRaw(data || {}))
+      
+      if (type === 'update' && props.editCallback) {
+        await props.editCallback(formObj.data)
+      } else if (type === 'add' && props.addCallback) {
+        await props.addCallback(formObj.data)
+      }
+      
       emit('openBeforeFun', {
         type: dialogObj.type,
         data: formObj.data,

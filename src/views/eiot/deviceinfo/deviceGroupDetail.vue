@@ -67,7 +67,7 @@ const column = ref<IColumn[]>([
     },
   },
   {
-    label: '设备DN',
+    label: '设备标识',
     key: 'dn',
     tableWidth: 240,
     search: true

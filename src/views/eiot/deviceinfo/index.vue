@@ -412,7 +412,7 @@ const column = ref<IColumn[]>([
     search: true,
     tableWidth: 240,
     componentProps: {
-      placeholder: '设备名称'
+      placeholder: '别名'
     },
   },
   {
@@ -423,7 +423,7 @@ const column = ref<IColumn[]>([
     componentProps: {
       placeholder: '一般为设备mac'
     },
-    rules: [{ required: true, message: '设备DN不能为空' }]
+    rules: [{ required: true, message: '设备标识不能为空' }]
   },
   {
     label: '产品',
