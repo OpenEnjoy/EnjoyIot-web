@@ -157,7 +157,8 @@ export default {
     home: 'Home',
     contributor: 'Contributor',
     analysis: 'Analysis',
-    workplace: 'Workplace'
+    workplace: 'Workplace',
+    iotDashboard: 'IoT Dashboard'
   },
   analysis: {
     newUser: 'New user',
@@ -457,5 +458,42 @@ export default {
     btn_zoom_in: 'Zoom in',
     btn_zoom_out: 'Zoom out',
     preview: 'Preivew'
+  },
+  dashboard: {
+    totalDevices: 'Total Devices',
+    onlineDevices: 'Online Devices',
+    offlineDevices: 'Offline Devices',
+    alertCount: 'Today Alerts',
+    productCount: 'Total Products',
+    deviceDistribution: 'Device Distribution',
+    devices: 'Devices',
+    searchPlaceholder: 'Search device name/serial number',
+    statusFilter: 'Device Status',
+    productFilter: 'Product Category',
+    allStatus: 'All Status',
+    allProducts: 'All Products',
+    online: 'Online',
+    offline: 'Offline',
+    alert: 'Alert',
+    error: 'Error',
+    markerMode: 'Marker Mode',
+    clusterMode: 'Cluster Mode',
+    heatmapMode: 'Heatmap Mode',
+    clearFilters: 'Clear Filters',
+    expandSearch: 'Expand Search',
+    serialNumber: 'Serial Number',
+    status: 'Status',
+    product: 'Product',
+    address: 'Address',
+    coordinates: 'Coordinates',
+    viewDetails: 'View Details',
+    sendCommand: 'Send Command',
+    viewAlerts: 'View Alerts',
+    deviceMap: 'Device Map',
+    markers: 'Markers',
+    cluster: 'Cluster',
+    unknownDevice: 'Unknown Device',
+    deviceId: 'Device ID',
+    location: 'Location'
   }
 }

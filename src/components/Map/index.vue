@@ -1,32 +1,26 @@
 <template>
-  <div v-if="props.isWrite">
-    <el-form ref="form" label-width="120px">
-      <el-form-item label="设备位置:">
-        <el-select
-          style="width: 100%"
-          v-model="state.address"
-          clearable
-          filterable
-          remote
-          reserve-keyword
-          placeholder="请输入地址"
-          :remote-method="autoSearch"
-          @change="regeoCode"
-          :loading="state.loading"
-        >
-          <el-option v-for="item in state.mapAddrOptions" :key="item.value" :label="item.name" :value="item.value" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="设备地图:">
-        <div id="rwMap" class="mapContainer"></div>
-      </el-form-item>
-    </el-form>
-  </div>
-  <div v-else>
-    <el-descriptions :column="2" border :labelStyle="{ 'font-weight': 'bold' }">
-      <el-descriptions-item label="设备位置:">{{state.address}}</el-descriptions-item>
-    </el-descriptions>
-    <div id="rMap" class="mapContainer"></div>
+  <div class="map-wrapper">
+    <div v-if="props.isWrite" class="address-select">
+      <el-select
+        style="width: 100%"
+        v-model="state.address"
+        clearable
+        filterable
+        remote
+        reserve-keyword
+        placeholder="请输入地址搜索位置"
+        :remote-method="autoSearch"
+        @change="regeoCode"
+        :loading="state.loading"
+      >
+        <el-option v-for="item in state.mapAddrOptions" :key="item.value" :label="item.name" :value="item.value" />
+      </el-select>
+    </div>
+    <div v-if="props.isWrite" id="rwMap" class="mapContainer"></div>
+    <div v-if="!props.isWrite">
+      <div class="address-display">位置: {{ state.address || '暂无位置信息' }}</div>
+      <div id="rMap" class="mapContainer"></div>
+    </div>
   </div>
 </template>
 
@@ -113,6 +107,9 @@ const initAutoComplete=()=> {
 }
 
 const autoSearch=(queryValue:string)=> {
+  if (!queryValue || !state.autoComplete) {
+    return
+  }
   state.autoComplete.search(queryValue, (status, result) => {
     var res = result.tips || [] // 搜索成功时，result即是对应的匹配数据
     const temp = ref<any[]>([])
@@ -177,8 +174,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.map-wrapper {
+  width: 100%;
+}
+.address-select {
+  margin-bottom: 10px;
+}
+.address-display {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #606266;
+  padding: 10px 0;
+}
 .mapContainer {
   width: 100%;
-  height: 240px;
+  height: 300px;
 }
 </style>

@@ -42,11 +42,15 @@
       <el-form-item label="备注" prop="remark">
         <el-input v-model="formData.remark" placeholder="请输入备注" />
       </el-form-item>
-      <el-form-item label="经纬度" prop="lat">
-        <el-input v-model="formData.lat" placeholder="请输入经纬度" />
-      </el-form-item>
-      <el-form-item label="经纬度" prop="lon">
-        <el-input v-model="formData.lon" placeholder="请输入经纬度" />
+      <el-form-item label="设备位置">
+        <Map
+          :is-write="true"
+          :click-map="true"
+          :center="mapCenter"
+          :address="formAddress"
+          @locate-change="handleLocateChange"
+          @address-change="handleAddressChange"
+        />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -58,6 +62,7 @@
 <script setup lang="ts">
 import { DeviceInfoApi, DeviceInfoVO } from '@/api/eiot/deviceinfo'
 import {getIntDictOptions, DICT_TYPE} from "@/utils/dict";
+import Map from '@/components/LeafletMap/index.vue';
 
 /** 设备信息 表单 */
 defineOptions({ name: 'DeviceInfoForm' })
@@ -80,7 +85,8 @@ const formData = ref({
   serialNo: undefined,
   remark: undefined,
   lat: undefined,
-  lon: undefined
+  lon: undefined,
+  addr: undefined
 })
 const formRules = reactive({
   dn: [{ required: true, message: '设备唯一标识不能为空', trigger: 'blur' }],
@@ -89,6 +95,28 @@ const formRules = reactive({
   serialNo: [{ required: true, message: '设备序列号不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
+
+const mapCenter = computed(() => {
+  if (formData.value.lat && formData.value.lon) {
+    return `${formData.value.lat},${formData.value.lon}`
+  }
+  return ''
+})
+
+const formAddress = computed(() => {
+  return formData.value.addr || ''
+})
+
+const handleLocateChange = (lnglat: string[]) => {
+  if (lnglat && lnglat.length >= 2) {
+    formData.value.lat = lnglat[0]
+    formData.value.lon = lnglat[1]
+  }
+}
+
+const handleAddressChange = (address: string) => {
+  formData.value.addr = address
+}
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -145,7 +173,8 @@ const resetForm = () => {
     serialNo: undefined,
     remark: undefined,
     lat: undefined,
-    lon: undefined
+    lon: undefined,
+    addr: undefined
   }
   formRef.value?.resetFields()
 }

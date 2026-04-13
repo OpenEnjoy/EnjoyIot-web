@@ -159,7 +159,8 @@ export default {
     home: '首页',
     contributor: '贡献指南',
     analysis: '分析页',
-    workplace: '工作台'
+    workplace: '工作台',
+    iotDashboard: 'IoT仪表盘'
   },
   analysis: {
     newUser: '新增用户',
@@ -452,6 +453,43 @@ export default {
     btn_zoom_in: '放大',
     btn_zoom_out: '缩小',
     preview: '预览'
+  },
+  dashboard: {
+    totalDevices: '设备总数',
+    onlineDevices: '在线设备',
+    offlineDevices: '离线设备',
+    alertCount: '今日告警',
+    productCount: '产品总数',
+    deviceDistribution: '设备分布',
+    devices: '设备',
+    searchPlaceholder: '搜索设备名称/序列号',
+    statusFilter: '设备状态',
+    productFilter: '产品分类',
+    allStatus: '全部状态',
+    allProducts: '全部产品',
+    online: '在线',
+    offline: '离线',
+    alert: '告警',
+    error: '告警',
+    markerMode: '标记点模式',
+    clusterMode: '聚类模式',
+    heatmapMode: '热力图模式',
+    clearFilters: '清除筛选',
+    expandSearch: '展开搜索',
+    serialNumber: '序列号',
+    status: '状态',
+    product: '产品',
+    address: '地址',
+    coordinates: '坐标',
+    viewDetails: '查看详情',
+    sendCommand: '发送指令',
+    viewAlerts: '查看告警',
+    deviceMap: '设备地图',
+    markers: '标记点',
+    cluster: '聚类',
+    unknownDevice: '未知设备',
+    deviceId: '设备ID',
+    location: '位置'
   },
   'OAuth 2.0': 'OAuth 2.0' // 避免菜单名是 OAuth 2.0 时，一直 warn 报错
 }

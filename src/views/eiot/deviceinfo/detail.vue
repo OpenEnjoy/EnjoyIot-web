@@ -4,76 +4,96 @@
     <el-divider />
     <el-tabs v-loading="loading" v-model="state.activeName" @tab-click="handleClick">
       <el-tab-pane label="基本信息" name="base">
-        <el-form
-          ref="editFormRef"
-          :model="state.deviceDetail"
-          :rules="editRules"
-          label-width="auto"
-          class="w-[600px]"
-        >
-          <el-form-item v-if="inAdd != true" label="设备id" prop="id">
-            <el-input v-model="state.deviceDetail.id" :disabled="true" />
-          </el-form-item>
-          <el-form-item label="别名" prop="name">
-            <el-input v-model="state.deviceDetail.name" :disabled="!inEdit" />
-          </el-form-item>
-          <el-form-item label="productKey" prop="productKey">
-            <el-input
-              readonly
-              :value="formattedProductName"
-              :placeholder="$t('productKey')"
-              :disabled="!inAdd"
+        <el-row :gutter="20">
+          <el-col :span="14">
+            <el-form
+              ref="editFormRef"
+              :model="state.deviceDetail"
+              :rules="editRules"
+              label-width="auto"
             >
-              <template #append>
-                <el-button @click="selectProduct" :disabled="!inAdd">{{ $t('选择') }}</el-button>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item label="序列号" prop="serial No">
-            <el-input v-model="state.deviceDetail.serialNo" :disabled="!inAdd">
-              <template #append>
-                <el-button v-if="state.nodeType !== 3" @click="generateSerialNo" :disabled="!inAdd">
-                  {{ $t('输入序列号') }}
+              <el-form-item v-if="inAdd != true" label="设备id" prop="id">
+                <el-input v-model="state.deviceDetail.id" :disabled="true" />
+              </el-form-item>
+              <el-form-item label="别名" prop="name">
+                <el-input v-model="state.deviceDetail.name" :disabled="!inEdit" />
+              </el-form-item>
+              <el-form-item label="productKey" prop="productKey">
+                <el-input
+                  readonly
+                  :value="formattedProductName"
+                  :placeholder="$t('productKey')"
+                  :disabled="!inAdd"
+                >
+                  <template #append>
+                    <el-button @click="selectProduct" :disabled="!inAdd">{{ $t('选择') }}</el-button>
+                  </template>
+                </el-input>
+              </el-form-item>
+              <el-form-item label="序列号" prop="serial No">
+                <el-input v-model="state.deviceDetail.serialNo" :disabled="!inAdd">
+                  <template #append>
+                    <el-button v-if="state.nodeType !== 3" @click="generateSerialNo" :disabled="!inAdd">
+                      {{ $t('输入序列号') }}
+                    </el-button>
+                    <el-button v-if="state.nodeType === 3" @click="genSipID" :disabled="!inAdd">
+                      {{ $t('生成') }}
+                    </el-button>
+                  </template>
+                </el-input>
+              </el-form-item>
+              <el-form-item label="设备唯一标识" prop="dn">
+                <el-input v-model="state.deviceDetail.dn" :disabled="!inAdd" />
+              </el-form-item>
+              <el-form-item label="设备密钥" prop="secret">
+                <el-input v-model="state.deviceDetail.secret" :disabled="true" />
+              </el-form-item>
+              <el-form-item label="设备地址" prop="addr">
+                <el-input v-model="state.deviceDetail.addr" :disabled="!inEdit" />
+              </el-form-item>
+              <el-form-item label="固件版本" prop="firmVersion">
+                <el-input
+                  v-model="state.deviceDetail.firmVersion"
+                  type="number"
+                  step="0.1"
+                  :disabled="!inEdit"
+                />
+              </el-form-item>
+              <el-form-item label="在线状态" prop="state">
+                <el-tag type="success" v-if="state.deviceDetail.state === 1">在线</el-tag>
+                <el-tag type="warning" v-if="state.deviceDetail.state === 0">离线</el-tag>
+              </el-form-item>
+              <el-form-item label="创建时间" prop="createTime" v-if="!inAdd">
+                <el-input v-model="state.deviceDetail.createTime" disabled="true" />
+              </el-form-item>
+              <el-form-item label="激活时间" prop="activeTime" v-if="!inAdd">
+                <el-input v-model="state.deviceDetail.activeTime" disabled="true" />
+              </el-form-item>
+              <div class="flex justify-center" v-if="handleType != 'view'">
+                <el-button type="primary" @click="submitForm"
+                >{{ handleType == 'add' ? '新增' : '保存' }}
                 </el-button>
-                <el-button v-if="state.nodeType === 3" @click="genSipID" :disabled="!inAdd">
-                  {{ $t('生成') }}
-                </el-button>
+              </div>
+            </el-form>
+          </el-col>
+          <el-col :span="10">
+            <el-card class="map-card">
+              <template #header>
+                <div class="card-header">
+                  <span>设备位置</span>
+                </div>
               </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item label="设备唯一标识" prop="dn">
-            <el-input v-model="state.deviceDetail.dn" :disabled="!inAdd" />
-          </el-form-item>
-          <el-form-item label="设备密钥" prop="secret">
-            <el-input v-model="state.deviceDetail.secret" :disabled="true" />
-          </el-form-item>
-          <el-form-item label="设备地址" prop="addr">
-            <el-input v-model="state.deviceDetail.addr" :disabled="!inEdit" />
-          </el-form-item>
-          <el-form-item label="固件版本" prop="firmVersion">
-            <el-input
-              v-model="state.deviceDetail.firmVersion"
-              type="number"
-              step="0.1"
-              :disabled="!inEdit"
-            />
-          </el-form-item>
-          <el-form-item label="在线状态" prop="state">
-            <el-tag type="success" v-if="state.deviceDetail.state === 1">在线</el-tag>
-            <el-tag type="warning" v-if="state.deviceDetail.state === 0">离线</el-tag>
-          </el-form-item>
-          <el-form-item label="创建时间" prop="createTime" v-if="!inAdd">
-            <el-input v-model="state.deviceDetail.createTime" disabled="true" />
-          </el-form-item>
-          <el-form-item label="激活时间" prop="activeTime" v-if="!inAdd">
-            <el-input v-model="state.deviceDetail.activeTime" disabled="true" />
-          </el-form-item>
-          <div class="flex justify-center" v-if="handleType != 'view'">
-            <el-button type="primary" @click="submitForm"
-            >{{ handleType == 'add' ? '新增' : '保存' }}
-            </el-button>
-          </div>
-        </el-form>
+              <Map
+                :is-write="inEdit"
+                :click-map="inEdit"
+                :center="mapCenter"
+                :address="deviceAddress"
+                @locate-change="handleLocateChange"
+                @address-change="handleAddressChange"
+              />
+            </el-card>
+          </el-col>
+        </el-row>
         <div style="margin: 10px 10px"
         >设备标签&nbsp;<el-button size="small" @click="addTag">
           <Icon icon="ep:plus" /> </el-button
@@ -534,6 +554,7 @@ import PropertyTable from './modules/PropertyTable.vue'
 import PropertyChart from './modules/PropertyChart.vue'
 
 import productList from './product-list.vue'
+import Map from '@/components/LeafletMap/index.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
 import SubEquipment from "./modules/detail/subEquipment.vue";
@@ -1237,6 +1258,28 @@ const formattedProductName = computed(() => {
     : ''
 })
 
+const mapCenter = computed(() => {
+  if (state.deviceDetail.lat && state.deviceDetail.lon) {
+    return `${state.deviceDetail.lat},${state.deviceDetail.lon}`
+  }
+  return ''
+})
+
+const deviceAddress = computed(() => {
+  return state.deviceDetail.addr || ''
+})
+
+const handleLocateChange = (lnglat: string[]) => {
+  if (lnglat && lnglat.length >= 2) {
+    state.deviceDetail.lat = lnglat[0]
+    state.deviceDetail.lon = lnglat[1]
+  }
+}
+
+const handleAddressChange = (address: string) => {
+  state.deviceDetail.addr = address
+}
+
 const getLevelType = (level: string) => {
   const levelMap: Record<string, string> = {
     '1': 'danger',
@@ -1318,5 +1361,15 @@ logSearch()
 }
 .alert-record-tab {
   padding: 10px;
+}
+.map-card {
+  height: 100%;
+}
+.map-card :deep(.el-card__body) {
+  padding: 10px;
+}
+.card-header {
+  font-weight: bold;
+  font-size: 14px;
 }
 </style>
