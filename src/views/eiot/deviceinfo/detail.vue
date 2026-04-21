@@ -986,6 +986,7 @@ const sendDeviceMsg = (fun) => {
     let val = fun.value
     switch (fun.dataTypeName) {
       case 'int32':
+      case 'int64':
         val = parseInt(val, 10)
         if (isNaN(val) || val < Number(fun.raw.dataType.specs.min) || val > Number(fun.raw.dataType.specs.max)) {
           ElMessage({
@@ -1008,11 +1009,24 @@ const sendDeviceMsg = (fun) => {
         }
         break
       case 'float':
+      case 'double':
         val = parseFloat(val)
         if (isNaN(val)) {
           ElMessage({
             type: 'error',
             message: '请输入有效的浮点数'
+          })
+          return
+        }
+        break
+      case 'array':
+      case 'object':
+        try {
+          val = JSON.parse(val)
+        } catch (error) {
+          ElMessage({
+            type: 'error',
+            message: '璇疯緭鍏ユ湁鏁堢殑 JSON'
           })
           return
         }
