@@ -17,8 +17,8 @@
     delBtn: false,
   }"
   @on-load="getData"
-  @delFun="onDelete"
-  @saveFun="onSave"
+  @del-fun="onDelete"
+  @save-fun="onSave"
   >
     <template #rightToolbar>
       <el-col :span="12" style="margin-right: 5px">
@@ -55,7 +55,8 @@
     >
       <el-form v-if="fileUploadDialog.visible" ref="ossFormRef" label-width="80px">
         <el-form-item label="文件名">
-          <fileUpload :fileSize="10" :fileType="['xlsx', 'xls']" :limit="1" uploadType="url"
+          <fileUpload
+:fileSize="10" :fileType="['xlsx', 'xls']" :limit="1" uploadType="url"
           uploadUrl="/eiot/device/group/importData" @upload-success="handleUploadSuccess"/>
         </el-form-item>
       </el-form>

@@ -16,8 +16,8 @@
       <el-table-column sortable prop="dataTypeName" label="数据类型" width="100" />
       <el-table-column sortable prop="params" label="数据定义" width="200" />
     </el-table>
-    <el-button type="primary" @click="sendThingModelMsg()" v-if="this.propertiesTyp == '属性上报'">发送</el-button>
-    <el-button type="primary" @click="sendAllPropertiesGet()" v-if="this.propertiesTyp == '属性调试'">获取</el-button>
+    <el-button type="primary" @click="sendThingModelMsg()" v-if="propertiesTyp == '属性上报'">发送</el-button>
+    <el-button type="primary" @click="sendAllPropertiesGet()" v-if="propertiesTyp == '属性调试'">获取</el-button>
   </div>
 </template>
 
@@ -25,7 +25,7 @@
 import {deviceSimulateSend} from "@/api/eiot/deviceinfo/devices.api";
 
 export default {
-  name: 'deviceSimulatorProperties',
+  name: 'DeviceSimulatorProperties',
   props: {
     properties: {
       type: Array,

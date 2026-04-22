@@ -23,7 +23,7 @@
 
     <el-table :data="logList" border style="width: 95%">
       <el-table-column label="时间" width="180">
-        <template v-slot="scope">
+        <template #default="scope">
           {{ formatDate(scope.row.time) }}
         </template>
       </el-table-column>
@@ -36,7 +36,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <Pagination :data="formInline" @onPagePaging="getEvents" />
+    <Pagination :data="formInline" @on-page-paging="getEvents" />
   </div>
 </template>
 
@@ -45,7 +45,7 @@ import { formatDate } from '@/utils/formatTime'
 import {deviceLogs} from "@/api/eiot/deviceinfo/devices.api";
 
 export default {
-  name: 'deviceLog',
+  name: 'DeviceLog',
   props: {
     deviceDetail: {
       type: Object

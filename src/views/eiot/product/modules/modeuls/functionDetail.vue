@@ -83,7 +83,10 @@ const state = reactive({
   modelForm: {} as any,
   modelType: '1',
   model: {} as any,
-  boolItem: {},
+  boolItem: {
+    _true: '',
+    _false: '',
+  },
   enumItems: [{}],
   scriptRules: {
     model: [{ required: true, message: '设备型号不能为空', trigger: 'blur' }],
@@ -101,8 +104,10 @@ const openDialog = (row?: any, prop?: any) => {
     state.modelForm = row
     state.isAdd = false
     state.modelType = row.model?.endsWith && row.model.endsWith('_default') ? '1' : '2'
-    if (prop.enumItems) state.enumItems = prop.enumItems
-    if (prop.boolItem) state.boolItem = prop.boolItem
+    state.enumItems = [{}]
+    state.boolItem = { _true: '', _false: '' }
+    if (prop?.enumItems) state.enumItems = prop.enumItems
+    if (prop?.boolItem) state.boolItem = prop.boolItem
   } else {
     state.isAdd = true
     state.modelForm = {

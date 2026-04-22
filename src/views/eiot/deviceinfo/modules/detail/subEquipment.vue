@@ -16,14 +16,14 @@
       <el-table-column label="产品" property="productName" align="center" width="180" />
       <el-table-column label="设备DN" property="dn" align="center" />
       <el-table-column label="状态" align="center">
-        <template v-slot="scope">
+        <template #default="scope">
           <el-tag v-if="scope.row.state === 1" type="success" size="small">在线</el-tag>
           <el-tag v-else type="danger" size="small">离线</el-tag>
         </template>
       </el-table-column>
       <el-table-column :formatter="dateFormatter"  label="创建时间" prop="createTime" align="center"/>
       <el-table-column label="操作" align="center">
-        <template v-slot="scope">
+        <template #default="scope">
           <el-popconfirm title="确认要解除与网关的关联吗？" @confirm="handleDelete(scope.row)">
             <template #reference>
               <el-button link type="danger" icon="Delete">解绑</el-button>

@@ -17,10 +17,10 @@
     }"
       v-model:page="state.page"
       v-model:query="state.query"
-      @openBeforeFun="openBeforeFun"
-      @delFun="onDelete"
-      @saveFun="onSave"
-      @onLoad="getData"
+      @open-before-fun="openBeforeFun"
+      @del-fun="onDelete"
+      @save-fun="onSave"
+      @on-load="getData"
     >
       <template #remarkForm="scope">
         <el-input v-model="scope.row.remark" type="textarea" :rows="2" maxlength="255" />

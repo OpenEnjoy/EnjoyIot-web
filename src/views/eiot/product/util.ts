@@ -74,7 +74,7 @@ export const stringifyThingModelValue = (value: any) => {
   return JSON.stringify(value, null, 2)
 }
 
-export const ParseProperty = (model, enumItems, boolItem) => {
+export const ParseProperty = (model, enumItems, boolItem, options: { asParameter?: boolean } = {}) => {
   const modelRaw = JSON.parse(JSON.stringify(model))
   const dataType = modelRaw.dataType || { specs: {} }
   dataType.type = normalizeThingModelType(dataType.type)
@@ -90,9 +90,14 @@ export const ParseProperty = (model, enumItems, boolItem) => {
       }
     })
   } else if (dataType.type == 'bool') {
+    const prevSpecs = dataType.specs || {}
+    const falseLabel =
+      boolItem?._true ?? prevSpecs['0'] ?? prevSpecs.false ?? prevSpecs['false'] ?? ''
+    const trueLabel =
+      boolItem?._false ?? prevSpecs['1'] ?? prevSpecs.true ?? prevSpecs['true'] ?? ''
     dataType.specs = {
-      '0': boolItem._true,
-      '1': boolItem._false
+      '0': falseLabel,
+      '1': trueLabel
     }
   } else if (['int32', 'int64'].includes(dataType.type)) {
     dataType.specs = {
@@ -131,12 +136,19 @@ export const ParseProperty = (model, enumItems, boolItem) => {
     dataType.specs = {}
   }
 
-  return {
+  const base = {
     description: modelRaw.description,
-    unit: modelRaw.unit,
     identifier: modelRaw.identifier,
     name: modelRaw.name,
     dataType,
+    required: !!modelRaw.required
+  }
+  if (options.asParameter) {
+    return base
+  }
+  return {
+    ...base,
+    unit: modelRaw.unit,
     accessMode: modelRaw.accessMode || 'r'
   }
 }

@@ -15,7 +15,8 @@
       </el-form-item>
       <el-form-item label="类型 " prop="typ">
         <el-select v-model="formData.typ">
-          <el-option v-for="dict in getIntDictOptions(DICT_TYPE.EIOT_SHOW_MODEL_TYP)" :key="dict.value" :value="dict.value"
+          <el-option
+v-for="dict in getIntDictOptions(DICT_TYPE.EIOT_SHOW_MODEL_TYP)" :key="dict.value" :value="dict.value"
                      :label="dict.label"/>
         </el-select>
       </el-form-item>
@@ -30,7 +31,8 @@
 
       <el-form-item label="状态" prop="status">
         <el-radio-group v-model="formData.status">
-          <el-radio v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)" :key="dict.value"
+          <el-radio
+v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)" :key="dict.value"
                     :value="dict.value" :label="dict.label"/>
         </el-radio-group>
       </el-form-item>

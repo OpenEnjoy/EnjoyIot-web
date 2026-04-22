@@ -1,0 +1,169 @@
+{
+  "profile": {
+    "name": "FULLBLOOD_ALL_TYPES_E2E",
+    "productKey": "E2E_COMPLEX_20260421232948",
+    "deviceName": "E2E-COMPLEX-DN-20260421232948",
+    "ruleId": 24
+  },
+  "simulateSend": {
+    "property": {
+      "type": "property",
+      "identifier": "report",
+      "data": {
+        "p_bool": 1,
+        "p_enum": 2,
+        "p_int32": 101,
+        "p_int64": "123456789",
+        "p_float": 12.34,
+        "p_double": 23.456,
+        "p_string": "short-string",
+        "p_text": "fullblood thing model e2e",
+        "p_date": "2026-04-22",
+        "p_datetime": "2026-04-22 15:30:00",
+        "p_position": "31.2304,121.4737",
+        "p_object3": {
+          "meta": {
+            "version": "v3",
+            "flags": ["f1", "f2"]
+          },
+          "readings": [
+            {
+              "ts": "2026-04-22 15:30:00",
+              "value": 12.3
+            }
+          ]
+        },
+        "p_array3": [
+          {
+            "bucketId": "b001",
+            "items": [
+              {
+                "k": "a",
+                "v": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "event": {
+      "type": "event",
+      "identifier": "alarm",
+      "data": {
+        "e_bool": 1,
+        "e_enum": 2,
+        "e_int32": 202,
+        "e_int64": "888888888",
+        "e_float": 66.6,
+        "e_double": 88.66,
+        "e_string": "event-string",
+        "e_text": "event long text",
+        "e_date": "2026-04-22",
+        "e_datetime": "2026-04-22 16:40:00",
+        "e_position": "31.2304,121.4737",
+        "e_object3": {
+          "headers": {
+            "source": "sensor",
+            "level": "high"
+          },
+          "records": [
+            {
+              "code": "A1",
+              "message": "overheat"
+            }
+          ]
+        },
+        "e_array3": [
+          {
+            "bucketId": "e001",
+            "items": [
+              {
+                "k": "temp",
+                "v": 88.6
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "serviceReply": {
+      "type": "service",
+      "identifier": "calibrate_reply",
+      "data": {
+        "out_bool": 1,
+        "out_enum": 2,
+        "out_int32": 303,
+        "out_int64": "999999999",
+        "out_float": 12.34,
+        "out_double": 56.789,
+        "out_string": "service-reply-string",
+        "out_text": "service reply long text",
+        "out_date": "2026-04-22",
+        "out_datetime": "2026-04-22 16:45:00",
+        "out_position": "31.2304,121.4737",
+        "out_object3": {
+          "batch": "B20260422",
+          "score": 98.7,
+          "ok": 1
+        },
+        "out_array3": [
+          {
+            "group": "g1",
+            "count": 2
+          }
+        ]
+      }
+    }
+  },
+  "downlink": {
+    "propertySet": {
+      "args": {
+        "p_bool": 1,
+        "p_enum": 1,
+        "p_text": "downlink-set"
+      }
+    },
+    "serviceInvoke": {
+      "service": "calibrate",
+      "args": {
+        "in_bool": 1,
+        "in_enum": 2,
+        "in_int32": 1001,
+        "in_int64": "888888001",
+        "in_float": 11.22,
+        "in_double": 33.445,
+        "in_string": "service-input-string",
+        "in_text": "service input long text",
+        "in_date": "2026-04-22",
+        "in_datetime": "2026-04-22 16:50:00",
+        "in_position": "31.2304,121.4737",
+        "in_object3": {
+          "version": "v1",
+          "metrics": [
+            {
+              "k": "temp",
+              "v": 22.3
+            }
+          ]
+        },
+        "in_array3": [
+          {
+            "bucket": "b-in",
+            "items": [
+              {
+                "code": "x1",
+                "value": 7
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "assertions": {
+    "deviceLogTypes": ["property", "event", "service"],
+    "deviceLogIdentifiers": ["report", "alarm", "calibrate_reply"],
+    "downlinkTopicMustContain": ["/c/service/property/set", "/c/service/calibrate"],
+    "ruleFilterKeywords": ["p_object3", "p_array3"]
+  }
+}

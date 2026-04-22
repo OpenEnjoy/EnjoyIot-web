@@ -5,7 +5,7 @@
         <el-tab-pane label="上行指令调试" name="up">
           <el-tabs type="border-card" v-if="activeTab === 'up'">
             <el-tab-pane label="属性上报">
-              <DeviceSimulatorProperties :properties="properties" :deviceDetail="this.deviceDetail" propertiesTyp="属性上报" />
+              <DeviceSimulatorProperties :properties="properties" :deviceDetail="deviceDetail" propertiesTyp="属性上报" />
             </el-tab-pane>
             <el-tab-pane label="事件上报">
               <DeviceSimulatorProperties :properties="events" :deviceDetail="deviceDetail" propertiesTyp="事件上报" />
@@ -19,7 +19,7 @@
         <el-tab-pane label="下行指令调试" name="down">
           <el-tabs type="border-card" v-if="activeTab === 'down'">
             <el-tab-pane label="属性调试">
-              <DeviceSimulatorProperties :properties="properties" :deviceDetail="this.deviceDetail" propertiesTyp="属性调试" />
+              <DeviceSimulatorProperties :properties="properties" :deviceDetail="deviceDetail" propertiesTyp="属性调试" />
             </el-tab-pane>
             <el-tab-pane label="服务调用" />
           </el-tabs>
@@ -34,7 +34,7 @@
     <el-col :span="12">
       <el-tabs type="border-card">
         <el-tab-pane label="设备日志">
-          <device-log :deviceDetail="this.deviceDetail" :thingModelEvents="events" :thingModelServices="services" />
+          <device-log :deviceDetail="deviceDetail" :thingModelEvents="events" :thingModelServices="services" />
         </el-tab-pane>
         <!-- <el-tab-pane label="服务器日志"> </el-tab-pane> -->
       </el-tabs>
@@ -49,7 +49,13 @@ import { deviceSimulateSend } from '@/api/eiot/deviceinfo/devices.api'
 // import MqttClient from './MqttClient.vue'
 
 export default{
-    name: 'deviceSimulator',
+    name: 'DeviceSimulator',
+
+    components: {
+      DeviceSimulatorProperties,
+      DeviceLog,
+      // MqttClient
+  },
     props:{
       thingModelFunctions:{
         type: Array
@@ -97,6 +103,9 @@ export default{
         return this.thingModelFunctions.filter(o=> o.type=='service')
       }
     },
+    created(){
+
+    },
     methods: {
       deviceState(row){
         deviceSimulateSend({
@@ -115,14 +124,5 @@ s
             })
       }
     },
-    created(){
-
-    },
-
-    components: {
-      DeviceSimulatorProperties,
-      DeviceLog,
-      // MqttClient
-  },
 }
 </script>

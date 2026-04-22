@@ -10,7 +10,7 @@
       v-model:page="state.page"
       v-model:query="state.query"
       @on-load="getData"
-      @saveFun="onSave"
+      @save-fun="onSave"
       @del-fun="handleDelete"
     >
       <template #state="scope">

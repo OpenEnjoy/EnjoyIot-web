@@ -64,7 +64,6 @@ import SelectDevice from '@/components/EiotSelect/select-device.vue'
 import {ThingModelApi} from "@/api/eiot/thingmodel";
 export default defineComponent({
   name: 'DeviceAction',
-  emits: ['update:services'],
   components: {
     SelectDevice,
   },
@@ -74,6 +73,7 @@ export default defineComponent({
       default: () => [],
     },
   },
+  emits: ['update:services'],
   data() {
     return {
       showDeviceSelector: false,
