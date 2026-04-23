@@ -2,7 +2,7 @@
   <div>
     <div class="list-box">
       <el-collapse v-model="activeName">
-        <el-collapse-item :name="index" v-for="(item, index) in list" :key="index">
+        <el-collapse-item :name="index" v-for="(item, index) in list" :key="item.__uiKey || index">
           <template #title>
             <div class="flex" style="justify-content: space-between;width: 100%;">
               <div class="cu-title" @click.stop>
@@ -36,7 +36,7 @@
             <div class="main">
               <div class="title">条件</div>
               <div class="main-box">
-                <div class="box" v-for="(cond, condIndex) in item.conditions" :key="condIndex">
+                <div class="box" v-for="(cond, condIndex) in item.conditions" :key="cond.__uiKey || condIndex">
                   <div class="item">
                     <el-row style="width: 100%;">
                       <el-col :span="4">
@@ -175,7 +175,49 @@ for (let i = 0; i < 100; i++) {
   arr.push(i)
 }
 const activeName = ref<number[]>(arr)
-const list = ref<any[]>(props.filters || [])
+const list = ref<any[]>([])
+
+const makeUiKey = () => `flt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
+const normalizeCondition = (raw: any) => ({
+  ...(raw || {}),
+  __uiKey: raw?.__uiKey || makeUiKey(),
+})
+const normalizeFilterItem = (raw: any) => {
+  let item = raw || {}
+  if (item.config && typeof item.config === 'string') {
+    try {
+      item = JSON.parse(item.config || '{}')
+    } catch (e) {
+      item = { ...item }
+    }
+  }
+  return {
+    ...item,
+    cond: item.cond === undefined ? 2 : item.cond,
+    conditions: Array.isArray(item.conditions) ? item.conditions.map((c: any) => normalizeCondition(c)) : [],
+    __uiKey: item.__uiKey || makeUiKey(),
+  }
+}
+const stripUiField = (raw: any) => {
+  const rest = { ...(raw || {}) }
+  delete rest.__uiKey
+  if (Array.isArray(rest.conditions)) {
+    rest.conditions = rest.conditions.map((c: any) => {
+      const cRest = { ...(c || {}) }
+      delete cRest.__uiKey
+      return cRest
+    })
+  }
+  return rest
+}
+
+watch(
+  () => props.filters,
+  (val) => {
+    list.value = (val || []).map((item: any) => normalizeFilterItem(item))
+  },
+  { deep: true, immediate: true }
+)
 
 const hadnleSelectDevice = (device, row) => {
   if (!device.productKey) return
@@ -416,52 +458,42 @@ watch(
 )
 
 const handleEmits = () => {
-  const arr = toRaw(list.value).map((m) => {
-    let config = m
-    if (config.config) {
-      config = JSON.parse(config.config || '{}')
-    }
-    if (!stateMap.value.has(config.pk)) getProductObjectModel(config.pk)
+  list.value.forEach((config: any) => {
+    if (config?.pk && !stateMap.value.has(config.pk)) getProductObjectModel(config.pk)
     if (config.cond === undefined) config.cond = 2
-    
+
     // Ensure type is set for conditions
     if (config.conditions) {
       config.conditions.forEach((c: any) => {
         if (!c.type && c.identifier && config.pk) {
-           const groups = stateMap.value.get(config.pk)?.modelItems
-           if (groups) {
-             for (const g of groups) {
-               const found = g.items.find((i: any) => i.identifier === c.identifier)
-               if (found) {
-                 c.type = found.type
-                 break
-               }
-             }
-           }
+          const groups = stateMap.value.get(config.pk)?.modelItems
+          if (groups) {
+            for (const g of groups) {
+              const found = g.items.find((i: any) => i.identifier === c.identifier)
+              if (found) {
+                c.type = found.type
+                break
+              }
+            }
+          }
         }
       })
     }
-    
-    return {
-      ...config,
-    }
   })
-  list.value = arr
-  emits('update:filters', arr)
+  emits('update:filters', toRaw(list.value).map((item: any) => stripUiField(item)))
 }
 watch(
-  () => list.value.length,
-  (newV) => {
+  list,
+  () => {
     handleEmits()
   },
   {
-    immediate: true,
-    // deep: true,
+    deep: true,
   }
 )
 // 鏂板杩囨护鍣?
 const handleAdd = () => {
-  list.value.push({
+  list.value.push(normalizeFilterItem({
     deviceRadio: '指定设备',
     cond: 2,
     conditions: [
@@ -469,7 +501,7 @@ const handleAdd = () => {
         parameters: [],
       },
     ],
-  })
+  }))
 }
 
 // 鍒犻櫎杩囨护鍣?
@@ -729,7 +761,7 @@ const validateParamValue = (param, pk?: string) => {
 // 鏂板鏉′欢
 const handleAddCondition = (item: any) => {
   if (!item.conditions) item.conditions = []
-  item.conditions.push({})
+  item.conditions.push(normalizeCondition({}))
 }
 // 鍒犻櫎鏉′欢
 const handleRemoveCondition = (item: any, index: number) => {
