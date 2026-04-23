@@ -10,9 +10,9 @@
     :table-props="{
         selection: false,
       }"
-    @onLoad="getData"
-    @saveFun="onSave"
-    @delFun="onDelete"
+    @on-load="getData"
+    @save-fun="onSave"
+    @del-fun="onDelete"
   >
     <!-- 审核状态插槽 -->
     <template #status="{ row }">

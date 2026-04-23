@@ -31,6 +31,7 @@ import FunctionDetail from './modeuls/functionDetail.vue'
 import YtTableFun from '@/components/common/yt-table-fun.vue'
 import YtTable from '@/components/common/yt-table'
 import {useEmitt} from '@/hooks/web/useEmitt'
+import { normalizeThingModelType } from '@/views/eiot/product/util'
 
 const {emitter} = useEmitt()
 
@@ -75,10 +76,10 @@ const handleUpdate = (row: any) => {
       })
     }
     props.enumItems = enumSpecs
-  } else if (prop.dataType.type == 'bool') {
+  } else if (normalizeThingModelType(prop?.dataType?.type) === 'bool') {
     props.boolItem = {
-      _true: prop.dataType.specs['0'],
-      _false: prop.dataType.specs['1'],
+      _true: prop.dataType.specs?.['0'] ?? prop.dataType.specs?.false ?? prop.dataType.specs?.['false'] ?? '',
+      _false: prop.dataType.specs?.['1'] ?? prop.dataType.specs?.true ?? prop.dataType.specs?.['true'] ?? '',
     }
   }
   functionDetailRef.value.openDialog(toRaw(row), props)

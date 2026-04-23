@@ -14,9 +14,9 @@
         menuSlot: true,
         menuWidth: 300,
       }"
-      @onLoad="getData"
-      @delFun="onDelete"
-      @saveFun="onSave"
+      @on-load="getData"
+      @del-fun="onDelete"
+      @save-fun="onSave"
     >
       <template #menuSlot="scope">
         <el-tooltip class="box-item" effect="dark" content="编辑转换脚本" placement="top">

@@ -32,6 +32,46 @@ export default defineComponent({
         deep: true,
       }
     )
+    const formWatchStops = new Map<string, () => void>()
+    const clearFormWatchers = () => {
+      formWatchStops.forEach((stop) => stop())
+      formWatchStops.clear()
+    }
+    const setupFormWatchers = () => {
+      clearFormWatchers()
+      columns.value.forEach((item: IColumn) => {
+        if (!item.formWatch || !item.key) return
+        const watchKey = String(item.key)
+        const stop = watch(
+          () => formObj.data[item.key],
+          (newV) => {
+            item.formWatch?.({
+              col: item,
+              column: columns.value,
+              data: formObj.data,
+              value: newV,
+            })
+          },
+          {
+            immediate: true,
+            deep: true,
+          }
+        )
+        formWatchStops.set(watchKey, stop)
+      })
+    }
+    watch(
+      columns,
+      () => {
+        setupFormWatchers()
+      },
+      {
+        deep: true,
+      }
+    )
+    onBeforeUnmount(() => {
+      clearFormWatchers()
+    })
     // 定义钩子
     const diglogRef = ref()
     const formRef = ref()
@@ -71,6 +111,7 @@ export default defineComponent({
       reset()
       done()
     }
+    setupFormWatchers()
     // 获取是否禁用
     const getDisabled = (option: IColumn) => {
       let disabled = false
@@ -153,23 +194,6 @@ export default defineComponent({
                     if (dialogObj.type === 'add' && m.addHide) return
                     if (dialogObj.type === 'update' && m.editHide) return
                     if (!m.formHide) {
-                      if (m.formWatch) {
-                        watch(
-                          () => formObj.data[m.key],
-                          (newV) => {
-                            m.formWatch?.({
-                              col: m,
-                              column: columns.value,
-                              data: formObj.data,
-                              value: newV,
-                            })
-                          },
-                          {
-                            immediate: true,
-                            deep: true,
-                          }
-                        )
-                      }
                       return (
                         <ElCol span={m.colSpan || props.colSpan || 24}>
                           {!m.formItemSlot ? (

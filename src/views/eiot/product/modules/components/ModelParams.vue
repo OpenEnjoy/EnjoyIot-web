@@ -1,12 +1,19 @@
 <template>
   <div style="width: 100%;">
     <el-table v-if="!state.showPropertyParam" size="small" :data="modelParams" highlight-current-row border style="width: 100%;">
+      <el-table-column label="必填" width="80">
+        <template #default="scope">
+          <el-tag size="small" :type="scope.row.required ? 'danger' : 'info'">
+            {{ scope.row.required ? '是' : '否' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="name" label="参数名称" width="100" />
       <el-table-column prop="identifier" label="标识符" width="180" />
       <el-table-column prop="description" label="描述" width="100"/>
       <el-table-column prop="dataType.type" label="类型" width="80" />
       <el-table-column label="操作">
-        <template v-slot:header>
+        <template #header>
           <el-button @click="addParams" type="primary" size="small" plain>添加参数</el-button>
         </template>
         <template #default="scope">
@@ -44,6 +51,7 @@
 import { propTypes } from '@/utils/propTypes'
 import PropertyModel from './PropertyModel.vue'
 import { ParseProperty } from '@/views/eiot/product/util'
+import { normalizeThingModelType } from '@/views/eiot/product/util'
 
 const props = defineProps({
   modelParams: {
@@ -61,6 +69,7 @@ const state = reactive({
     name: '',
     identifier: '',
     description: '',
+    required: false,
     type: 'property',
     dataType: {}
   },
@@ -87,10 +96,10 @@ const handleParamEdit = (index: number, row: any) => {
       state.enumItems = enumSpecs
     }
   }
-  if (row.dataType.type == 'bool' && specs) {
+  if (normalizeThingModelType(row?.dataType?.type) === 'bool' && specs) {
     state.boolItem = {
-      _true: specs['0'],
-      _false: specs['1']
+      _true: specs['0'] ?? specs.false ?? specs['false'] ?? '',
+      _false: specs['1'] ?? specs.true ?? specs['true'] ?? ''
     }
   }
 
@@ -102,6 +111,7 @@ const addParams = () => {
     name: '',
     identifier: '',
     description: '',
+    required: false,
     type: 'property',
     dataType: {
       specs: {}
@@ -121,7 +131,7 @@ function cancelEditParam() {
   state.showPropertyParam = false
 }
 function newProperty() {
-  return ParseProperty(state.currParamProperty, state.enumItems, state.boolItem)
+  return ParseProperty(state.currParamProperty, state.enumItems, state.boolItem, { asParameter: true })
 }
 async function saveParam() {
   const valid = await propertyModelRef.value.validate()

@@ -10,8 +10,9 @@
       v-model:page="state.page"
       v-model:query="state.query"
       @on-load="getData"
-      @saveFun="onSave"
+      @save-fun="onSave"
       @del-fun="handleDelete"
+      @open-before-fun="handleOpenBeforeFun"
     >
       <template #state="scope">
         <!-- <el-switch
@@ -40,7 +41,7 @@
         </el-tooltip>
       </template>
       <template #customFormItem="{row}">
-        <el-card v-if="ensureTriggerOptions(row)" shadow="never" class="mb-15">
+        <el-card v-if="row?.triggerOptions" shadow="never" class="mb-15">
           <template #header>触发控制</template>
           <el-row :gutter="20">
             <el-col :span="12">
@@ -84,10 +85,10 @@
           </el-row>
         </el-card>
         <el-tabs v-model="activeName" type="border-card">
-          <el-tab-pane label="监听器" :name="1">
-            <listener  ref="listenerRef"  v-if="activeName === 1" v-model:listeners="row.listeners" />
+          <el-tab-pane label="监听器" :name="'1'">
+            <listener  ref="listenerRef"  v-if="activeName === '1'" v-model:listeners="row.listeners" />
           </el-tab-pane>
-          <el-tab-pane label="过滤器" :name="2">
+          <el-tab-pane label="过滤器" :name="'2'">
             <el-col :span="12">
               <el-form-item label="执行条件" prop="lsnCond">
                 <el-select v-model="row.lsnCond" placeholder="请选择执行条件">
@@ -97,10 +98,10 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <filtera v-if="activeName === 2" v-model:filters="row.filters" :listeners="row.listeners" />
+            <filtera v-if="activeName === '2'" v-model:filters="row.filters" :listeners="row.listeners" />
           </el-tab-pane>
-          <el-tab-pane label="输出" :name="3">
-            <Output v-if="activeName === 3" v-model:list="row.actions" type="rule" actions="device,http,mqtt,kafka,tcp,alert" />
+          <el-tab-pane label="输出" :name="'3'">
+            <Output v-if="activeName === '3'" v-model:list="row.actions" type="rule" actions="device,http,mqtt,kafka,tcp,alert" />
           </el-tab-pane>
         </el-tabs>
       </template>
@@ -128,16 +129,42 @@ const normalizeTriggerOptions = (opts?: any) => ({
   ...defaultTriggerOptions,
   ...(opts || {}),
 })
-const ensureTriggerOptions = (row: any) => {
+const normalizeConfigArrayItem = (raw?: any) => {
+  if (!(raw?.config && typeof raw.config === 'string')) return raw
+  try {
+    const item = { ...(raw || {}), ...JSON.parse(raw.config || '{}') }
+    delete item.config
+    return item
+  } catch (e) {
+    return raw
+  }
+}
+const normalizeConfigArray = (arr?: any[]) => {
+  if (!Array.isArray(arr)) return []
+  let changed = false
+  const next = arr.map((item: any) => {
+    const normalized = normalizeConfigArrayItem(item)
+    if (normalized !== item) changed = true
+    return normalized
+  })
+  return changed ? next : arr
+}
+const normalizeRuleDetailData = (row: any) => {
+  if (!row) return
+  row.listeners = normalizeConfigArray(row.listeners)
+  row.filters = normalizeConfigArray(row.filters)
+  row.actions = normalizeConfigArray(row.actions)
   row.triggerOptions = normalizeTriggerOptions(row?.triggerOptions)
-  return true
+}
+const handleOpenBeforeFun = ({ data }: any) => {
+  normalizeRuleDetailData(data)
 }
 // 查看日志
 const logDialogRef = ref()
 const handleViewLog = (id: string) => {
   logDialogRef.value.openDialog(id)
 }
-const activeName = ref(1)
+const activeName = ref('1')
 const column: IColumn[] = [
   {
     label: '规则名称',

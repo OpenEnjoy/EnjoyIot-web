@@ -48,7 +48,7 @@
         </el-col>
       </el-row>
     </yt-table-fun>
-    <yt-table-form ref="tableFormRef" :column="column" @onSuccess="handleSave" @openBeforeFun="openBeforeFun">
+    <yt-table-form ref="tableFormRef" :column="column" @on-success="handleSave" @open-before-fun="openBeforeFun">
       <template #configForm="scope">
         <el-form
           v-if="scope.row.protocol == 'http'"
@@ -239,7 +239,7 @@
           :params="{
             id: row.id
           }"
-          @stringSuccess="(res) => uploadJarSuccess(res, row)"
+          @string-success="(res) => uploadJarSuccess(res, row)"
           uploadType="url"
           uploadUrl="/protocol/uploadJar"
         />

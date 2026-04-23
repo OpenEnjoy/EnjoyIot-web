@@ -7,7 +7,7 @@
     v-model:query="state.query"
     :total="state.total"
     :loading="state.loading"
-    @onLoad="getData"
+    @on-load="getData"
     :fun-props="{
         addBtn: false,
       }"

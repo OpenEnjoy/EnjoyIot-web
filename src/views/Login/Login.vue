@@ -11,7 +11,8 @@
     </div>
     <div class="login-box flex">
       <div class="login-l flex-1">
-        <img src="@/assets/imgs/login_bg.jpg" 
+        <img
+src="@/assets/imgs/login_bg.jpg" 
           alt="科技插图" 
           class="w-full mb-8"
         />

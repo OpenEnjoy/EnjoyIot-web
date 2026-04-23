@@ -6,7 +6,7 @@
       <el-table-column prop="description" label="描述" width="100" />
       <el-table-column prop="dataType.type" label="类型" width="80" />
       <el-table-column label="操作">
-        <template v-slot:header>
+        <template #header>
           <el-button @click="addParams" type="primary" size="small" plain>添加参数</el-button>
         </template>
         <template #default="scope">

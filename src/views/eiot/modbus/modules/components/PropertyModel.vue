@@ -66,7 +66,7 @@
         <el-col :span="1">&nbsp;</el-col>
         <el-col :span="10">
           <el-input v-model="propertyRef.dataType.specs.precision" placeholder="精度" style="margin-top: 6px">
-            <template v-slot:append>(保留小数位,实际数据以int存储)</template>
+            <template #append>(保留小数位,实际数据以int存储)</template>
           </el-input>
         </el-col>
       </el-form-item>

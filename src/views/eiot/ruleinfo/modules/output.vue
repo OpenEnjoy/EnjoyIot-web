@@ -2,7 +2,7 @@
   <div>
     <div class="list-box">
       <el-collapse v-model="activeName">
-        <el-collapse-item :name="index" v-for="(item, index) in dataList" :key="index">
+        <el-collapse-item :name="index" v-for="(item, index) in dataList" :key="item.__uiKey || index">
           <template #title>
             <div class="flex" style="justify-content: space-between;width: 100%;">
               <div class="cu-title" @click.stop>
@@ -65,30 +65,48 @@ for (let i = 0; i < 10; i++) {
   arr.push(i)
 }
 const activeName = ref<number[]>(arr)
-const dataList = ref<any[]>(props.list || [])
-watch(
-  () => dataList.value.length,
-  (newV) => {
-    const arr = dataList.value.map((m) => {
-      if (m.config) {
-        const obj = JSON.parse(m.config || '{}')
-        return obj
-      }
-      return m
-    })
-    dataList.value = arr
-    emits('update:list', arr)
-  },
-  {
-    // deep: true,
-    immediate: true,
+const makeUiKey = () => `out_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
+const normalizeOutputItem = (raw: any) => {
+  let item = raw || {}
+  if (item.config && typeof item.config === 'string') {
+    try {
+      item = JSON.parse(item.config || '{}')
+    } catch (e) {
+      item = { ...item }
+    }
   }
+  return {
+    ...item,
+    __uiKey: item.__uiKey || makeUiKey(),
+  }
+}
+const stripUiField = (raw: any) => {
+  const rest = { ...(raw || {}) }
+  delete rest.__uiKey
+  return rest
+}
+const dataList = ref<any[]>([])
+
+watch(
+  () => props.list,
+  (val) => {
+    dataList.value = (val || []).map((item: any) => normalizeOutputItem(item))
+  },
+  { deep: true, immediate: true }
+)
+
+watch(
+  dataList,
+  (val) => {
+    emits('update:list', (val || []).map((item: any) => stripUiField(item)))
+  },
+  { deep: true }
 )
 // 新增输出
 const handleAdd = () => {
-  dataList.value.push({
+  dataList.value.push(normalizeOutputItem({
     services: [],
-  })
+  }))
 }
 
 // 删除输出
@@ -151,10 +169,6 @@ const actionTypeChange = (item) => {
     }
   }
 }
-onUnmounted(() => {
-  console.log('onUnmounted')
-  dataList.value = []
-})
 </script>
 
 <style lang="scss" scoped>
