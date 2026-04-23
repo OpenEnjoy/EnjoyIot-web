@@ -449,10 +449,10 @@ async function main() {
     const token = await login();
     const templateProduct = await getTemplateProduct(token);
     const suffix = now();
-    const productKey = `AUTO_FULLBLOOD_${suffix}`;
-    const dn = `AUTO-FULLBLOOD-DN-${suffix}`;
-    const productName = `AutoFullblood_${suffix}`;
-    const ruleName = `AUTO_FULLBLOOD_RULE_${suffix}`;
+    const productKey = `AUTOFULLBLOOD${suffix}`;
+    const dn = `AUTOFULLBLOODDN${suffix}`;
+    const productName = `AutoFullblood${suffix}`;
+    const ruleName = `AUTOFULLBLOODRULE${suffix}`;
 
     const createProductBody = {
       name: productName,
