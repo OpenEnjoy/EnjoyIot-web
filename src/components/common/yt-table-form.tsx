@@ -67,7 +67,6 @@ export default defineComponent({
       },
       {
         deep: true,
-        immediate: true,
       }
     )
     onBeforeUnmount(() => {
@@ -112,6 +111,7 @@ export default defineComponent({
       reset()
       done()
     }
+    setupFormWatchers()
     // 获取是否禁用
     const getDisabled = (option: IColumn) => {
       let disabled = false
