@@ -1054,10 +1054,6 @@ const removeParmeter = (index: number, cond: any) => {
   cond.parameters.splice(index, 1)
 }
 
-onUnmounted(() => {
-  console.log('onUnmounted')
-  list.value = []
-})
 </script>
 
 <style lang="scss" scoped>

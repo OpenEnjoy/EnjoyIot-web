@@ -169,10 +169,6 @@ const actionTypeChange = (item) => {
     }
   }
 }
-onUnmounted(() => {
-  console.log('onUnmounted')
-  dataList.value = []
-})
 </script>
 
 <style lang="scss" scoped>

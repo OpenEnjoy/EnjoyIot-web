@@ -84,10 +84,10 @@
           </el-row>
         </el-card>
         <el-tabs v-model="activeName" type="border-card">
-          <el-tab-pane label="监听器" :name="1">
-            <listener  ref="listenerRef"  v-if="activeName === 1" v-model:listeners="row.listeners" />
+          <el-tab-pane label="监听器" :name="'1'">
+            <listener  ref="listenerRef"  v-if="activeName === '1'" v-model:listeners="row.listeners" />
           </el-tab-pane>
-          <el-tab-pane label="过滤器" :name="2">
+          <el-tab-pane label="过滤器" :name="'2'">
             <el-col :span="12">
               <el-form-item label="执行条件" prop="lsnCond">
                 <el-select v-model="row.lsnCond" placeholder="请选择执行条件">
@@ -97,10 +97,10 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <filtera v-if="activeName === 2" v-model:filters="row.filters" :listeners="row.listeners" />
+            <filtera v-if="activeName === '2'" v-model:filters="row.filters" :listeners="row.listeners" />
           </el-tab-pane>
-          <el-tab-pane label="输出" :name="3">
-            <Output v-if="activeName === 3" v-model:list="row.actions" type="rule" actions="device,http,mqtt,kafka,tcp,alert" />
+          <el-tab-pane label="输出" :name="'3'">
+            <Output v-if="activeName === '3'" v-model:list="row.actions" type="rule" actions="device,http,mqtt,kafka,tcp,alert" />
           </el-tab-pane>
         </el-tabs>
       </template>
@@ -137,7 +137,7 @@ const logDialogRef = ref()
 const handleViewLog = (id: string) => {
   logDialogRef.value.openDialog(id)
 }
-const activeName = ref(1)
+const activeName = ref('1')
 const column: IColumn[] = [
   {
     label: '规则名称',

@@ -809,9 +809,6 @@ const getOptions = (cond: any, item: any) => {
   return result
 }
 
-onUnmounted(() => {
-  list.value = []
-})
 </script>
 
 <style lang="scss" scoped>
