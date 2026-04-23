@@ -151,7 +151,7 @@ const handleSelectDevice = (device: any) => {
   loadThingModel(device.productKey)
 }
 
-const loadThingModel = (productKey: string) => {
+function loadThingModel(productKey: string) {
   ThingModelApi.getThingModelByProductKey(productKey).then((res: any) => {
     const model = res?.model || {}
     propertiesList.value = Array.isArray(model.properties) ? model.properties : []

@@ -12,6 +12,7 @@
       @on-load="getData"
       @save-fun="onSave"
       @del-fun="handleDelete"
+      @open-before-fun="handleOpenBeforeFun"
     >
       <template #state="scope">
         <!-- <el-switch
@@ -40,7 +41,7 @@
         </el-tooltip>
       </template>
       <template #customFormItem="{row}">
-        <el-card v-if="ensureTriggerOptions(row)" shadow="never" class="mb-15">
+        <el-card v-if="row?.triggerOptions" shadow="never" class="mb-15">
           <template #header>触发控制</template>
           <el-row :gutter="20">
             <el-col :span="12">
@@ -128,9 +129,35 @@ const normalizeTriggerOptions = (opts?: any) => ({
   ...defaultTriggerOptions,
   ...(opts || {}),
 })
-const ensureTriggerOptions = (row: any) => {
+const normalizeConfigArrayItem = (raw?: any) => {
+  if (!(raw?.config && typeof raw.config === 'string')) return raw
+  try {
+    const item = { ...(raw || {}), ...JSON.parse(raw.config || '{}') }
+    delete item.config
+    return item
+  } catch (e) {
+    return raw
+  }
+}
+const normalizeConfigArray = (arr?: any[]) => {
+  if (!Array.isArray(arr)) return []
+  let changed = false
+  const next = arr.map((item: any) => {
+    const normalized = normalizeConfigArrayItem(item)
+    if (normalized !== item) changed = true
+    return normalized
+  })
+  return changed ? next : arr
+}
+const normalizeRuleDetailData = (row: any) => {
+  if (!row) return
+  row.listeners = normalizeConfigArray(row.listeners)
+  row.filters = normalizeConfigArray(row.filters)
+  row.actions = normalizeConfigArray(row.actions)
   row.triggerOptions = normalizeTriggerOptions(row?.triggerOptions)
-  return true
+}
+const handleOpenBeforeFun = ({ data }: any) => {
+  normalizeRuleDetailData(data)
 }
 // 查看日志
 const logDialogRef = ref()

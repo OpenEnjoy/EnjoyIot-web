@@ -176,6 +176,7 @@ for (let i = 0; i < 100; i++) {
 }
 const activeName = ref<number[]>(arr)
 const list = ref<any[]>([])
+const syncingFromProps = ref(false)
 
 const makeUiKey = () => `flt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
 const normalizeCondition = (raw: any) => ({
@@ -214,7 +215,11 @@ const stripUiField = (raw: any) => {
 watch(
   () => props.filters,
   (val) => {
+    syncingFromProps.value = true
     list.value = (val || []).map((item: any) => normalizeFilterItem(item))
+    nextTick(() => {
+      syncingFromProps.value = false
+    })
   },
   { deep: true, immediate: true }
 )
@@ -485,6 +490,7 @@ const handleEmits = () => {
 watch(
   list,
   () => {
+    if (syncingFromProps.value) return
     handleEmits()
   },
   {
@@ -649,9 +655,6 @@ const getConditionDataType = (item: any, cond: any) => {
 const isBooleanCondition = (item: any, cond: any) => {
   if (!['==', '!='].includes(cond?.comparator || '')) return false
   const type = getConditionDataType(item, cond)
-  if (['bool', 'boolean'].includes(type)) {
-    cond.value = normalizeBooleanValue(cond?.value)
-  }
   return ['bool', 'boolean'].includes(type)
 }
 

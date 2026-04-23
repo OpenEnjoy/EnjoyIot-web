@@ -200,6 +200,7 @@ for (let i = 0; i < 100; i++) {
 
 const activeName = ref<number[]>(arr)
 const list = ref<any[]>(props.listeners || [])
+const syncingFromProps = ref(false)
 
 // 閫夋嫨浜у搧-璋冪敤鐗╂ā鍨?
 const handleSelectProduct = (product, item) => {
@@ -460,7 +461,7 @@ const initThingModel = (pk, res) => {
     })
     state.eventTreeMap[s.identifier] = treeItems
 
-    s.outputData.forEach((p) => {
+    (s.outputData || []).forEach((p) => {
       treeItems.push(
         buildNestedPathTree(
           p.identifier,
@@ -494,7 +495,7 @@ const initThingModel = (pk, res) => {
     })
     state.serviceTreeMap[s.identifier] = treeItems
 
-    s.outputData.forEach((p) => {
+    (s.outputData || []).forEach((p) => {
       treeItems.push(
         buildNestedPathTree(
           p.identifier,
@@ -546,17 +547,30 @@ const handleEmits = () => {
       ...config,
     }
   })
-  list.value = arr
   emits('update:listeners', arr)
 }
 watch(
-  () => list.value.length,
-  (newV) => {
-    handleEmits()
+  () => props.listeners,
+  (val) => {
+    syncingFromProps.value = true
+    list.value = Array.isArray(val) ? [...val] : []
+    nextTick(() => {
+      syncingFromProps.value = false
+    })
   },
   {
     immediate: true,
-    // deep: true,
+    deep: true,
+  }
+)
+watch(
+  list,
+  () => {
+    if (syncingFromProps.value) return
+    handleEmits()
+  },
+  {
+    deep: true,
   }
 )
 // 鏂板鐩戝惉鍣?
@@ -769,9 +783,6 @@ const getPropertyDataType = (pk: string, cond: any, param: any) => {
 const isBooleanParam = (pk: string, cond: any, param: any) => {
   if (!['==', '!='].includes(param?.comparator || '')) return false
   const type = getPropertyDataType(pk, cond, param)
-  if (['bool', 'boolean'].includes(type)) {
-    param.value = normalizeBooleanValue(param?.value)
-  }
   return ['bool', 'boolean'].includes(type)
 }
 
