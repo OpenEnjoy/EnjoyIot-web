@@ -10,9 +10,9 @@
     :table-props="{
         selection: false,
       }"
-    @onLoad="getData"
-    @saveFun="onSave"
-    @delFun="onDelete"
+    @on-load="getData"
+    @save-fun="onSave"
+    @del-fun="onDelete"
   >
     <template #paramFormItem="{ row }">
       <el-card v-if="row.code" class="box-card" shadow="never">

@@ -18,7 +18,8 @@
       </el-form-item>
       <el-form-item label="mcu code" prop="mcuCode">
         <el-select v-model="formData.mcuCode" clearable class="!w-240px">
-          <el-option v-for="dict in getDictOptions(DICT_TYPE.EIOT_MUC_CODE)" :key="dict.value"
+          <el-option
+v-for="dict in getDictOptions(DICT_TYPE.EIOT_MUC_CODE)" :key="dict.value"
                      :label="dict.label" :value="dict.value"/>
         </el-select>
       </el-form-item>
@@ -33,7 +34,8 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-radio-group v-model="formData.status">
-          <el-radio v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+          <el-radio
+v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
                     :key="dict.value" :label="dict.label" :value="dict.value"/>
         </el-radio-group>
       </el-form-item>
@@ -75,7 +77,8 @@
       </el-form-item>
       <el-form-item label="是否透传" prop="transparent">
         <el-radio-group v-model="formData.transparent">
-          <el-radio v-for="dict in getBoolDictOptions(DICT_TYPE.INFRA_BOOLEAN_STRING)"
+          <el-radio
+v-for="dict in getBoolDictOptions(DICT_TYPE.INFRA_BOOLEAN_STRING)"
            :key="dict.value" :label="dict.label" :value="dict.value"/>
         </el-radio-group>
       </el-form-item>

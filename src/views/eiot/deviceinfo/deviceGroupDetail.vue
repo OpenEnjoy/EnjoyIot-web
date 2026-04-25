@@ -19,7 +19,7 @@
       delBtnText: '批量退组'
     }"
     @on-load="getData"
-    @delFun="onDelete"
+    @del-fun="onDelete"
   >
       <template #menuSlot="scope">
         <el-button type="text" size="small" @click="removeFromGroup(scope.row.id)">退组</el-button>

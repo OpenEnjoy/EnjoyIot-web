@@ -25,6 +25,9 @@ use([
 
 export default {
   name: 'PropertyChart',
+  components: {
+    VChart,
+  },
   props: {
     name: {
       type: String,
@@ -39,19 +42,16 @@ export default {
       },
     },
   },
-  components: {
-    VChart,
-  },
   data() {
     return {}
-  },
-  mounted() {
-    this.refreshData()
   },
   watch: {
     properties: function (newV) {
       if (newV) this.refreshData()
     },
+  },
+  mounted() {
+    this.refreshData()
   },
   methods: {
     refreshData: function () {

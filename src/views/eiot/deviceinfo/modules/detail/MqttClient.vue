@@ -227,47 +227,6 @@ export default {
             default: () => { }
         }
     },
-    watch: {
-        deviceDetail: {
-            handler() {
-                this.connection.clientId = this.clientId
-                this.connection.username = this.username
-                this.connection.password = this.password
-                this.sys2ServeTopicPrefix =
-                    '/sys/' + this.productKey + '/' + this.deviceName + '/s'
-                this.sys2ClientTopicPrefix =
-                    '/sys/' + this.productKey + '/' + this.deviceName + '/c'
-                    this.initTopicList()
-            },
-            deep: true
-        },
-
-    },
-
-    computed: {
-        clientId() {
-            return this.deviceDetail.productKey + '_' + this.deviceDetail.deviceName + '_' + this.deviceDetail.model
-        },
-        username() {
-            return 'simulator_' + this.deviceDetail.deviceName
-        },
-        password() {
-            return this.deviceDetail.secret
-        },
-        productKey() {
-            return this.deviceDetail.productKey
-        },
-        deviceName() {
-            return this.deviceDetail.deviceName
-        },
-
-
-    },
-    mounted() {
-
-
-
-    },
 
 
 
@@ -306,6 +265,47 @@ export default {
             connecting: false,
             retryTimes: 0,
         }
+    },
+
+    computed: {
+        clientId() {
+            return this.deviceDetail.productKey + '_' + this.deviceDetail.deviceName + '_' + this.deviceDetail.model
+        },
+        username() {
+            return 'simulator_' + this.deviceDetail.deviceName
+        },
+        password() {
+            return this.deviceDetail.secret
+        },
+        productKey() {
+            return this.deviceDetail.productKey
+        },
+        deviceName() {
+            return this.deviceDetail.deviceName
+        },
+
+
+    },
+    watch: {
+        deviceDetail: {
+            handler() {
+                this.connection.clientId = this.clientId
+                this.connection.username = this.username
+                this.connection.password = this.password
+                this.sys2ServeTopicPrefix =
+                    '/sys/' + this.productKey + '/' + this.deviceName + '/s'
+                this.sys2ClientTopicPrefix =
+                    '/sys/' + this.productKey + '/' + this.deviceName + '/c'
+                    this.initTopicList()
+            },
+            deep: true
+        },
+
+    },
+    mounted() {
+
+
+
     },
     methods: {
         initData() {

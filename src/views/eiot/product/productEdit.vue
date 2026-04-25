@@ -28,32 +28,37 @@
           </el-form-item>
           <el-form-item label="节点类型" prop="nodeType">
             <el-select v-model="form.nodeType" :disabled="disabled">
-              <el-option v-for="(item, index) in getIntDictOptions(DICT_TYPE.EIOT_NODE_TYPE)" :key="index" :label="item.label"
+              <el-option
+v-for="(item, index) in getIntDictOptions(DICT_TYPE.EIOT_NODE_TYPE)" :key="index" :label="item.label"
                          :value="item.value"/>
             </el-select>
           </el-form-item>
           <el-form-item label="芯片类型" prop="mcuCode">
             <el-select v-model="form.mcuCode" :disabled="disabled">
-              <el-option v-for="(item, index) in getStrDictOptions(DICT_TYPE.EIOT_MUC_CODE)" :key="index" :label="item.label"
+              <el-option
+v-for="(item, index) in getStrDictOptions(DICT_TYPE.EIOT_MUC_CODE)" :key="index" :label="item.label"
                          :value="item.value"/>
             </el-select>
           </el-form-item>
           <el-form-item label="唯一标识" prop="dnType">
             <el-select v-model="form.dnTyp" :disabled="disabled">
-              <el-option v-for="(item, index) in getIntDictOptions(DICT_TYPE.EIOT_DN_TYP)" :key="index" :label="item.label"
+              <el-option
+v-for="(item, index) in getIntDictOptions(DICT_TYPE.EIOT_DN_TYP)" :key="index" :label="item.label"
                          :value="item.value"/>
             </el-select>
           </el-form-item>
 
           <el-form-item label="设备协议">
             <el-select v-model="form.protocolCode" :disabled="disabled">
-              <el-option v-for="item in getStrDictOptions(DICT_TYPE.EIOT_PROTOCOL_CODE)"
+              <el-option
+v-for="item in getStrDictOptions(DICT_TYPE.EIOT_PROTOCOL_CODE)"
                          :key="item.value" :label="item.label" :value="item.value"/>
             </el-select>
           </el-form-item>
           <el-form-item label="透传设备" prop="transparent">
             <el-radio-group v-model="form.transparent" :disabled="disabledView">
-              <el-radio v-for="(item, index) in transparentOptions" :key="index"
+              <el-radio
+v-for="(item, index) in transparentOptions" :key="index"
                         :label="item.value">{{ item.label }}
               </el-radio>
             </el-radio-group>
@@ -64,13 +69,15 @@
 
           <el-form-item  label="定位方式" prop="locateType">
             <el-radio-group v-model="form.locateType" :disabled="disabledView">
-              <el-radio v-for="(item, index) in locateUpdateTypeOptions" :key="index"
+              <el-radio
+v-for="(item, index) in locateUpdateTypeOptions" :key="index"
                         :label="item.value">{{ item.label }}
               </el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="产品图片">
-            <ImageUpload v-model="form.imgUrl" :modelValue="form.imgUrl" :disabled="disabledView"
+            <ImageUpload
+v-model="form.imgUrl" :modelValue="form.imgUrl" :disabled="disabledView"
                          uploadType="url"/>
           </el-form-item>
 

@@ -25,7 +25,8 @@
       </el-form-item>
       <el-form-item label="开启状态" prop="status">
         <el-radio-group v-model="formData.status">
-          <el-radio v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+          <el-radio
+v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
                     :key="dict.value" :label="dict.label" :value="dict.value"/>
         </el-radio-group>
       </el-form-item>

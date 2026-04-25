@@ -301,6 +301,49 @@ const remainingRouter: AppRouteRecordRaw[] = [
 
     ]
   },
+  {
+    path: '/device',
+    component: Layout,
+    name: 'EiotProductCompatRoot',
+    meta: {
+      hidden: true
+    },
+    children: [
+      {
+        path: 'eiotproduct',
+        name: 'EiotProductCompatLegacy',
+        meta: {
+          title: '产品管理',
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          activeMenu: '/eiot/product'
+        },
+        component: () => import('@/views/eiot/product/index.vue')
+      }
+    ]
+  },
+  {
+    path: '/eiot',
+    component: Layout,
+    name: 'EiotProductCompatAliasRoot',
+    meta: {
+      hidden: true
+    },
+    children: [
+      {
+        path: 'product',
+        name: 'EiotProductCompatAlias',
+        meta: {
+          title: '产品管理',
+          noCache: true,
+          hidden: true,
+          canTo: true
+        },
+        component: () => import('@/views/eiot/product/index.vue')
+      }
+    ]
+  },
 ]
 
 export default remainingRouter

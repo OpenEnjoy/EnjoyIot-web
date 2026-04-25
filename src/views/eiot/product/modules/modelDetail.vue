@@ -142,7 +142,8 @@
                     <div class="mb-10px">
                       <div class="inline-block">物模型属性：</div>
                       <div class="inline-block">
-                        <el-select v-model="element.identifier" @change="changeIdentifier($event, index)" placeholder="物模型属性"
+                        <el-select
+v-model="element.identifier" @change="changeIdentifier($event, index)" placeholder="物模型属性"
                                    class="!w-180px">
                           <el-option v-for="item in thingModel.properties" :key="item.identifier" :label="item.name" :value="item.identifier" />
                         </el-select>

@@ -1,6 +1,7 @@
 <template>
   <div>
-    <yt-table-search v-bind="bind.searchBind" :data="data" :column="column" v-model:query="query"
+    <yt-table-search
+v-bind="bind.searchBind" :data="data" :column="column" v-model:query="query"
                      @handle-search="search">
       <template v-for="(item, index) in searchSlots" :key="index" #[item]="scope">
         <slot

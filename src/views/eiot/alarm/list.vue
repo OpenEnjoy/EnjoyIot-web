@@ -11,7 +11,7 @@
         delBtn: false,
         editBtn: false,
       }"
-    @onLoad="getData"
+    @on-load="getData"
     :loading="state.loading"
     :total="state.total"
     v-model:page="state.page"

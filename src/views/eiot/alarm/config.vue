@@ -8,7 +8,7 @@
       }"
     @save-fun="onSave"
     @del-fun="handleDelete"
-    @onLoad="getData"
+    @on-load="getData"
     :loading="state.loading"
     :total="state.total"
     v-model:page="state.page"

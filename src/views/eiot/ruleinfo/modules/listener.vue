@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <div class="list-box">
       <el-collapse v-model="activeName">
@@ -29,46 +29,52 @@
                   <div class="item">
                     <el-row style="width: 100%;">
                       <el-col :span="7">
-                        <el-select v-model="cond.identifier" @change="(e) => conditionChange(cond, (stateMap.get(item.pk)?.modelItems || []), e)">
+                        <el-select v-model="cond.identifier" filterable @change="(e) => conditionChange(cond, (stateMap.get(item.pk)?.modelItems || []), e)">
                           <el-option-group v-for="group in (stateMap.get(item.pk)?.modelItems || [])" :key="group.name" :label="group.name">
-                            <el-option v-for="pro in group.items" :label="pro.name" :value="pro.identifier" :key="pro.identifier" />
+                            <el-option v-for="pro in group.items" :label="formatPathOptionLabel(pro)" :value="pro.identifier" :key="pro.identifier" />
                           </el-option-group>
                         </el-select>
                       </el-col>
                       <el-col :span="15" v-if="!cond?.identifier?.endsWith(':*')">
                         <el-row class="param-item" v-for="(param, paramIndex) in cond.parameters" :key="param.identifier">
-                          <!-- 属性上报的属性选择 -->
+                          <!-- 灞炴€т笂鎶ョ殑灞炴€ч€夋嫨 -->
                           <el-col :span="10" v-if="cond.identifier == 'report'">
-                            <el-select v-model="param.identifier" style="width: 100%;" placeholder="选择属性">
-                              <el-option
-                                v-for="p in (stateMap.get(item.pk)?.properties || [])"
-                                :label="p.name"
-                                :value="p.identifier"
-                                :key="p.identifier"
-                              />
-                            </el-select>
+                            <el-cascader
+                              v-model="param.identifier"
+                              filterable
+                              clearable
+                              style="width: 100%;"
+                              :show-all-levels="false"
+                              :props="pathCascaderProps"
+                              :options="getPropertyPathTree(item.pk)"
+                              placeholder="选择属性字段路径（逐层展开）"
+                            />
                           </el-col>
-                          <!-- 事件的属性选择 -->
+                          <!-- 浜嬩欢鐨勫睘鎬ч€夋嫨 -->
                           <el-col :span="10" v-else-if="cond.type == 'event' && cond.identifier && !cond.identifier.endsWith(':*')">
-                            <el-select v-model="param.identifier" style="width: 100%;" placeholder="选择事件属性">
-                              <el-option
-                                v-for="p in getEventProperties(item.pk, cond.identifier)"
-                                :label="p.name"
-                                :value="p.identifier"
-                                :key="p.identifier"
-                              />
-                            </el-select>
+                            <el-cascader
+                              v-model="param.identifier"
+                              filterable
+                              clearable
+                              style="width: 100%;"
+                              :show-all-levels="false"
+                              :props="pathCascaderProps"
+                              :options="getEventPathTree(item.pk, cond.identifier)"
+                              placeholder="选择事件字段路径（逐层展开）"
+                            />
                           </el-col>
-                          <!-- 服务的属性选择 -->
+                          <!-- 鏈嶅姟鐨勫睘鎬ч€夋嫨 -->
                           <el-col :span="10" v-else-if="cond.type == 'service' && cond.identifier && !cond.identifier.endsWith(':*')">
-                            <el-select v-model="param.identifier" style="width: 100%;" placeholder="选择服务输出参数">
-                              <el-option
-                                v-for="p in getServiceProperties(item.pk, cond.identifier)"
-                                :label="p.name"
-                                :value="p.identifier"
-                                :key="p.identifier"
-                              />
-                            </el-select>
+                            <el-cascader
+                              v-model="param.identifier"
+                              filterable
+                              clearable
+                              style="width: 100%;"
+                              :show-all-levels="false"
+                              :props="pathCascaderProps"
+                              :options="getServicePathTree(item.pk, cond.identifier)"
+                              placeholder="选择服务输出字段路径（逐层展开）"
+                            />
                           </el-col>
                           <el-col :span="6">
                             <el-select v-model="param.comparator" @change="onComparatorChange(param)" placeholder="选择比较方式">
@@ -86,7 +92,50 @@
                             </el-select>
                           </el-col>
                           <el-col :span="5">
+                            <el-select
+                              v-if="isBooleanParam(item.pk, cond, param)"
+                              v-model="param.value"
+                              placeholder="选择布尔值"
+                            >
+                              <el-option
+                                v-for="opt in getParamBooleanOptions(item.pk, cond, param)"
+                                :key="opt.value"
+                                :label="opt.label"
+                                :value="opt.value"
+                              />
+                            </el-select>
+                            <el-select
+                              v-else-if="isEnumParam(item.pk, cond, param)"
+                              v-model="param.value"
+                              placeholder="选择枚举值"
+                            >
+                              <el-option
+                                v-for="opt in getParamEnumOptions(item.pk, cond, param)"
+                                :key="opt.value"
+                                :label="opt.label"
+                                :value="opt.value"
+                              />
+                            </el-select>
+                            <el-date-picker
+                              v-else-if="isDateParam(item.pk, cond, param)"
+                              v-model="param.value"
+                              type="date"
+                              value-format="YYYY-MM-DD"
+                              format="YYYY-MM-DD"
+                              placeholder="选择日期"
+                              style="width: 100%;"
+                            />
+                            <el-date-picker
+                              v-else-if="isDateTimeParam(item.pk, cond, param)"
+                              v-model="param.value"
+                              type="datetime"
+                              value-format="YYYY-MM-DD HH:mm:ss"
+                              format="YYYY-MM-DD HH:mm:ss"
+                              placeholder="选择日期时间"
+                              style="width: 100%;"
+                            />
                             <el-input
+                              v-else
                               v-model="param.value"
                               auto-complete="off"
                               :placeholder="getValuePlaceholder(param.comparator, item.pk, cond, param)"
@@ -103,15 +152,6 @@
                             >
                               <Icon icon="ep:delete" />
                             </el-button>
-                          </el-col>
-                        </el-row>
-                        <!-- 表达式预览 -->
-                        <el-row class="param-item" v-if="param?.comparator && param?.value">
-                          <el-col :span="24">
-                            <div class="expression-preview">
-                              <Icon icon="ep:view" style="margin-right: 4px;" />
-                              <span>{{ previewExpression(param) }}</span>
-                            </div>
                           </el-col>
                         </el-row>
                       </el-col>
@@ -160,8 +200,9 @@ for (let i = 0; i < 100; i++) {
 
 const activeName = ref<number[]>(arr)
 const list = ref<any[]>(props.listeners || [])
+const syncingFromProps = ref(false)
 
-// 选择产品-调用物模型
+// 閫夋嫨浜у搧-璋冪敤鐗╂ā鍨?
 const handleSelectProduct = (product, item) => {
   console.log('product', product)
   if (!product.productKey) return
@@ -180,12 +221,158 @@ const getProductObjectModel = (pk) => {
     initThingModel(pk, data)
   })
 }
+
+const COMPLEX_TYPE_SET = new Set(['object', 'struct', 'array'])
+
+const normalizeTypeName = (type?: string) => {
+  if (!type) return 'string'
+  if (type === 'struct') return 'object'
+  return type
+}
+
+const getDataTypeLabel = (dataType: any) => {
+  const raw = typeof dataType === 'object' ? dataType?.type : dataType
+  if (!raw) return 'any'
+  return normalizeTypeName(raw)
+}
+
+const formatPathOptionLabel = (item: any) => {
+  if (!item) return ''
+  if (item.identifier === '*') return item.name || '*'
+  const typeLabel = getDataTypeLabel(item.dataType)
+  return `${item.name || item.identifier} [${typeLabel}]`
+}
+
+const mapTypeToUi = (type?: string) => {
+  const t = normalizeTypeName(type)
+  switch (t) {
+    case 'int32':
+      return 'int'
+    case 'int64':
+      return 'int'
+    case 'float':
+    case 'double':
+      return 'float'
+    case 'bool':
+    case 'boolean':
+      return 'bool'
+    case 'text':
+    case 'string':
+      return 'string'
+    case 'enum':
+      return 'enum'
+    case 'date':
+      return 'date'
+    case 'datetime':
+      return 'datetime'
+    case 'position':
+      return 'position'
+    case 'array':
+      return 'array'
+    case 'object':
+      return 'object'
+
+    default:
+      return t
+  }
+}
+
+const pathCascaderProps = {
+  emitPath: false,
+  value: 'value',
+  label: 'label',
+  children: 'children',
+}
+
+const buildNestedPathTree = (
+  baseIdentifier: string,
+  baseName: string,
+  dataType: any,
+  depth = 0
+): any => {
+  const normalizedType = normalizeTypeName(dataType?.type || dataType)
+  const node: any = {
+    value: baseIdentifier,
+    label: `${baseName} [${normalizedType}]`,
+    dataType: typeof dataType === 'object' ? dataType : { type: normalizedType }
+  }
+  if (depth >= 4) {
+    return node
+  }
+  if (normalizedType === 'object') {
+    const properties = dataType?.specs?.properties || []
+    const children = properties
+      .filter((p: any) => p?.identifier && p?.dataType)
+      .map((p: any) =>
+        buildNestedPathTree(
+          `${baseIdentifier}.${p.identifier}`,
+          p.name || p.identifier,
+          p.dataType,
+          depth + 1
+        )
+      )
+    if (children.length > 0) {
+      node.children = children
+    }
+  } else if (normalizedType === 'array') {
+    const itemType = dataType?.specs?.itemType
+    if (itemType) {
+      const child = buildNestedPathTree(
+        `${baseIdentifier}[*]`,
+        '每项',
+        itemType,
+        depth + 1
+      )
+      node.children = [child]
+    }
+  }
+  return node
+}
+
+const buildNestedPathOptions = (
+  baseIdentifier: string,
+  baseName: string,
+  dataType: any,
+  depth = 0
+): Array<{ identifier: string; name: string; dataType: any }> => {
+  const normalizedType = normalizeTypeName(dataType?.type || dataType)
+  const baseOption = {
+    identifier: baseIdentifier,
+    name: baseName,
+    dataType: typeof dataType === 'object' ? dataType : { type: normalizedType }
+  }
+  if (depth >= 4) {
+    return [baseOption]
+  }
+  if (normalizedType === 'object') {
+    const properties = dataType?.specs?.properties || []
+    const options: Array<{ identifier: string; name: string; dataType: any }> = []
+    properties.forEach((p: any) => {
+      if (!p?.identifier || !p?.dataType) return
+      const nextIdentifier = `${baseIdentifier}.${p.identifier}`
+      const nextName = `${baseName} / ${p.name || p.identifier}`
+      options.push(...buildNestedPathOptions(nextIdentifier, nextName, p.dataType, depth + 1))
+    })
+    return options.length ? options : [baseOption]
+  }
+  if (normalizedType === 'array') {
+    const itemType = dataType?.specs?.itemType
+    if (!itemType) return [baseOption]
+    const nextIdentifier = `${baseIdentifier}[*]`
+    const nextName = `${baseName} / 每项`
+    return buildNestedPathOptions(nextIdentifier, nextName, itemType, depth + 1)
+  }
+  return [baseOption]
+}
 const initThingModel = (pk, res) => {
   const state: any = {
     modelItems: [],
     properties: [],
     events: [],
     services: [],
+    propertyTree: [{ value: '*', label: '任意字段（*）' }],
+    eventTreeMap: {},
+    serviceTreeMap: {},
   }
 
   state.modelItems.push({
@@ -211,7 +398,7 @@ const initThingModel = (pk, res) => {
 
   let items: any[] = []
   state.modelItems.push({
-    name: '精确匹配',
+    name: '精准匹配',
     items: items,
   })
   items.push({
@@ -242,26 +429,58 @@ const initThingModel = (pk, res) => {
   })
   res?.model?.properties &&
   res.model.properties.forEach((p) => {
+    state.propertyTree.push(
+      buildNestedPathTree(
+        p.identifier,
+        p.name || p.identifier,
+        p.dataType
+      )
+    )
+    state.properties.push(
+      ...buildNestedPathOptions(
+        p.identifier,
+        p.name || p.identifier,
+        p.dataType
+      )
+    )
+    return
     state.properties.push({
       identifier: p.identifier,
       name: p.name,
-      dataType: p.dataType, // 保存完整的 dataType 信息
+      dataType: p.dataType, // 淇濆瓨瀹屾暣鐨?dataType 淇℃伅
     })
   })
 
   res?.model?.events &&
   res.model.events.forEach((s) => {
     let items: any[] = []
+    const treeItems: any[] = [{ value: '*', label: '任意字段（*）' }]
     state.events.push({
       identifier: s.identifier,
       items: items,
     })
+    state.eventTreeMap[s.identifier] = treeItems
 
-    s.outputData.forEach((p) => {
+    (s.outputData || []).forEach((p) => {
+      treeItems.push(
+        buildNestedPathTree(
+          p.identifier,
+          p.name || p.identifier,
+          p.dataType
+        )
+      )
+      items.push(
+        ...buildNestedPathOptions(
+          p.identifier,
+          p.name || p.identifier,
+          p.dataType
+        )
+      )
+      return
       items.push({
         identifier: p.identifier,
         name: p.name,
-        dataType: p.dataType, // 保存完整的 dataType 信息
+        dataType: p.dataType, // 淇濆瓨瀹屾暣鐨?dataType 淇℃伅
       })
     })
   })
@@ -269,21 +488,50 @@ const initThingModel = (pk, res) => {
   res?.model?.services &&
   res.model.services.forEach((s) => {
     let items: any[] = []
+    const treeItems: any[] = [{ value: '*', label: '任意字段（*）' }]
     state.services.push({
       identifier: s.identifier,
       items: items,
     })
+    state.serviceTreeMap[s.identifier] = treeItems
 
-    s.outputData.forEach((p) => {
+    (s.outputData || []).forEach((p) => {
+      treeItems.push(
+        buildNestedPathTree(
+          p.identifier,
+          p.name || p.identifier,
+          p.dataType
+        )
+      )
+      items.push(
+        ...buildNestedPathOptions(
+          p.identifier,
+          p.name || p.identifier,
+          p.dataType
+        )
+      )
+      return
       items.push({
         identifier: p.identifier,
         name: p.name,
-        dataType: p.dataType, // 保存完整的 dataType 信息
+        dataType: p.dataType, // 淇濆瓨瀹屾暣鐨?dataType 淇℃伅
       })
     })
   })
   stateMap.value.set(pk, state)
   handleEmits()
+}
+
+const getPropertyPathTree = (pk: string) => {
+  return stateMap.value.get(pk)?.propertyTree || []
+}
+
+const getEventPathTree = (pk: string, eventIdentifier: string) => {
+  return stateMap.value.get(pk)?.eventTreeMap?.[eventIdentifier] || []
+}
+
+const getServicePathTree = (pk: string, serviceIdentifier: string) => {
+  return stateMap.value.get(pk)?.serviceTreeMap?.[serviceIdentifier] || []
 }
 
 const stateMap = ref(new Map())
@@ -299,20 +547,33 @@ const handleEmits = () => {
       ...config,
     }
   })
-  list.value = arr
   emits('update:listeners', arr)
 }
 watch(
-  () => list.value.length,
-  (newV) => {
-    handleEmits()
+  () => props.listeners,
+  (val) => {
+    syncingFromProps.value = true
+    list.value = Array.isArray(val) ? [...val] : []
+    nextTick(() => {
+      syncingFromProps.value = false
+    })
   },
   {
     immediate: true,
-    // deep: true,
+    deep: true,
   }
 )
-// 新增监听器
+watch(
+  list,
+  () => {
+    if (syncingFromProps.value) return
+    handleEmits()
+  },
+  {
+    deep: true,
+  }
+)
+// 鏂板鐩戝惉鍣?
 const handleAdd = () => {
   list.value.push({
     type: 'device',
@@ -324,79 +585,39 @@ const handleAdd = () => {
   })
 }
 
-// 删除监听器
+// 鍒犻櫎鐩戝惉鍣?
 const removeListener = (index: number) => {
   list.value.splice(index, 1)
 }
 /**
- * 条件比较器配置 - 与Expression.java中的表达式处理保持一致
+ * 鏉′欢姣旇緝鍣ㄩ厤缃?- 涓嶦xpression.java涓殑琛ㄨ揪寮忓鐞嗕繚鎸佷竴鑷?
  *
- * 对应Expression.java中的eval方法支持的操作符:
- * - == : 字符串相等比较 (value.equals(triggerValue))
- * - != : 字符串不等比较 (!value.equals(triggerValue))
- * - > : 数值大于比较 (Double.parseDouble(value) > Double.parseDouble(triggerValue))
- * - < : 数值小于比较 (Double.parseDouble(value) < Double.parseDouble(triggerValue))
- * - >= : 数值大于等于比较 (Double.parseDouble(value) >= Double.parseDouble(triggerValue))
- * - <= : 数值小于等于比较 (Double.parseDouble(value) <= Double.parseDouble(triggerValue))
- * - between : 数值范围内比较，格式: "最小值-最大值" (min <= value <= max)
- * - notBetween : 数值范围外比较，格式: "最小值-最大值" (value <= min || value >= max)
- * - contain : 字符串包含比较 (value.contains(triggerValue))
- * - notContain : 字符串不包含比较 (!value.contains(triggerValue))
+ * 瀵瑰簲Expression.java涓殑eval鏂规硶鏀寔鐨勬搷浣滅:
+ * - == : 瀛楃涓茬浉绛夋瘮杈?(value.equals(triggerValue))
+ * - != : 瀛楃涓蹭笉绛夋瘮杈?(!value.equals(triggerValue))
+ * - > : 鏁板€煎ぇ浜庢瘮杈?(Double.parseDouble(value) > Double.parseDouble(triggerValue))
+ * - < : 鏁板€煎皬浜庢瘮杈?(Double.parseDouble(value) < Double.parseDouble(triggerValue))
+ * - >= : 鏁板€煎ぇ浜庣瓑浜庢瘮杈?(Double.parseDouble(value) >= Double.parseDouble(triggerValue))
+ * - <= : 鏁板€煎皬浜庣瓑浜庢瘮杈?(Double.parseDouble(value) <= Double.parseDouble(triggerValue))
+ * - between : 鏁板€艰寖鍥村唴姣旇緝锛屾牸寮? "鏈€灏忓€?鏈€澶у€? (min <= value <= max)
+ * - notBetween : 鏁板€艰寖鍥村姣旇緝锛屾牸寮? "鏈€灏忓€?鏈€澶у€? (value <= min || value >= max)
+ * - contain : 瀛楃涓插寘鍚瘮杈?(value.contains(triggerValue))
+ * - notContain : 瀛楃涓蹭笉鍖呭惈姣旇緝 (!value.contains(triggerValue))
  */
 const comparators = ref([
-  {
-    name: '等于',
-    value: '==',
-    description: '字符串相等比较',
-  },
-  {
-    name: '不等于',
-    value: '!=',
-    description: '字符串不等比较',
-  },
-  {
-    name: '大于',
-    value: '>',
-    description: '数值大于比较',
-  },
-  {
-    name: '小于',
-    value: '<',
-    description: '数值小于比较',
-  },
-  {
-    name: '大于等于',
-    value: '>=',
-    description: '数值大于等于比较',
-  },
-  {
-    name: '小于等于',
-    value: '<=',
-    description: '数值小于等于比较',
-  },
-  {
-    name: '在..之间',
-    value: 'between',
-    description: '数值范围内，格式: 最小值-最大值 (如: 10-20)',
-  },
-  {
-    name: '不在..之间',
-    value: 'notBetween',
-    description: '数值范围外，格式: 最小值-最大值 (如: 10-20)',
-  },
-  {
-    name: '包含',
-    value: 'contain',
-    description: '字符串包含比较',
-  },
-  {
-    name: '不包含',
-    value: 'notContain',
-    description: '字符串不包含比较',
-  },
+  { name: '等于', value: '==', description: '值完全相等' },
+  { name: '不等于', value: '!=', description: '值不相等' },
+  { name: '大于', value: '>', description: '数值大于比较值' },
+  { name: '小于', value: '<', description: '数值小于比较值' },
+  { name: '大于等于', value: '>=', description: '数值大于等于比较值' },
+  { name: '小于等于', value: '<=', description: '数值小于等于比较值' },
+  { name: '在区间内', value: 'between', description: '格式：最小值-最大值，例如 10-20' },
+  { name: '不在区间内', value: 'notBetween', description: '格式：最小值-最大值，例如 10-20' },
+  { name: '包含', value: 'contain', description: '包含指定关键字' },
+  { name: '不包含', value: 'notContain', description: '不包含指定关键字' }
 ])
 
-// 获取事件的属性列表
+// 鑾峰彇浜嬩欢鐨勫睘鎬у垪琛?
 const getEventProperties = (pk: string, eventIdentifier: string) => {
   const state = stateMap.value.get(pk)
   if (!state || !state.events) return []
@@ -404,14 +625,11 @@ const getEventProperties = (pk: string, eventIdentifier: string) => {
   const event = state.events.find(e => e.identifier === eventIdentifier)
   if (!event || !event.items) return []
 
-  // 添加"任意"选项和具体属性
-  return [
-    { identifier: '*', name: '任意属性' },
-    ...event.items
-  ]
+  // 娣诲姞"浠绘剰"閫夐」鍜屽叿浣撳睘鎬?
+  return [{ identifier: '*', name: '任意字段' }, ...event.items]
 }
 
-// 获取服务的输出参数列表
+// 鑾峰彇鏈嶅姟鐨勮緭鍑哄弬鏁板垪琛?
 const getServiceProperties = (pk: string, serviceIdentifier: string) => {
   const state = stateMap.value.get(pk)
   if (!state || !state.services) return []
@@ -419,34 +637,31 @@ const getServiceProperties = (pk: string, serviceIdentifier: string) => {
   const service = state.services.find(s => s.identifier === serviceIdentifier)
   if (!service || !service.items) return []
 
-  // 添加"任意"选项和具体参数
-  return [
-    { identifier: '*', name: '任意参数' },
-    ...service.items
-  ]
+  // 娣诲姞"浠绘剰"閫夐」鍜屽叿浣撳弬鏁?
+  return [{ identifier: '*', name: '任意参数' }, ...service.items]
 }
 
-// 根据属性类型获取可用的比较器
+// 鏍规嵁灞炴€х被鍨嬭幏鍙栧彲鐢ㄧ殑姣旇緝鍣?
 const getAvailableComparators = (pk: string, cond: any, param: any) => {
-  // 确保comparators存在
+  // 纭繚comparators瀛樺湪
   if (!comparators.value || !Array.isArray(comparators.value) || comparators.value.length === 0) {
     return []
   }
 
-  // 检查必要的参数
+  // 妫€鏌ュ繀瑕佺殑鍙傛暟
   if (!pk || !cond || !param) {
     return comparators.value
   }
 
-  // 如果没有选择具体属性，返回所有比较器
+  // 濡傛灉娌℃湁閫夋嫨鍏蜂綋灞炴€э紝杩斿洖鎵€鏈夋瘮杈冨櫒
   if (!param.identifier || param.identifier === '*') {
     return comparators.value
   }
 
-  // 获取属性的数据类型
+  // 鑾峰彇灞炴€х殑鏁版嵁绫诲瀷
   const propertyType = getPropertyDataType(pk, cond, param)
 
-  // 根据数据类型过滤比较器
+  // 鏍规嵁鏁版嵁绫诲瀷杩囨护姣旇緝鍣?
   switch (propertyType) {
     case 'int':
     case 'float':
@@ -454,40 +669,50 @@ const getAvailableComparators = (pk: string, cond: any, param: any) => {
     case 'long':
     case 'int32':
     case 'int64':
-      // 数值类型：支持所有比较器
+      // 鏁板€肩被鍨嬶細鏀寔鎵€鏈夋瘮杈冨櫒
       return comparators.value
 
     case 'text':
     case 'string':
-      // 字符串类型：不支持数值比较
+      // 瀛楃涓茬被鍨嬶細涓嶆敮鎸佹暟鍊兼瘮杈?
       return comparators.value.filter(c =>
         !['>', '<', '>=', '<=', 'between', 'notBetween'].includes(c.value)
+      )
+    case 'date':
+    case 'datetime':
+      return comparators.value.filter(c =>
+        ['==', '!=', '>', '<', '>=', '<=', 'between', 'notBetween'].includes(c.value)
       )
 
     case 'bool':
     case 'boolean':
-      // 布尔类型：只支持等于和不等于
+      // 甯冨皵绫诲瀷锛氬彧鏀寔绛変簬鍜屼笉绛変簬
       return comparators.value.filter(c =>
         ['==', '!='].includes(c.value)
       )
 
     case 'enum':
-      // 枚举类型：支持等于、不等于、包含
+      return comparators.value.filter(c =>
+        ['==', '!=', 'contain', 'notContain'].includes(c.value)
+      )
+    case 'array':
+    case 'object':
+    case 'struct':
       return comparators.value.filter(c =>
         ['==', '!=', 'contain', 'notContain'].includes(c.value)
       )
 
     default:
-      // 未知类型：返回基础比较器
+      // 鏈煡绫诲瀷锛氳繑鍥炲熀纭€姣旇緝鍣?
       return comparators.value.filter(c =>
         ['==', '!=', 'contain', 'notContain'].includes(c.value)
       )
   }
 }
 
-// 获取属性的数据类型
+// 鑾峰彇灞炴€х殑鏁版嵁绫诲瀷
 const getPropertyDataType = (pk: string, cond: any, param: any) => {
-  // 防御性检查
+  // 闃插尽鎬ф鏌?
   if (!pk || !cond || !param) {
     return 'string'
   }
@@ -498,30 +723,30 @@ const getPropertyDataType = (pk: string, cond: any, param: any) => {
 
   let dataTypeInfo = null
 
-  // 根据条件类型获取属性信息
+  // 鏍规嵁鏉′欢绫诲瀷鑾峰彇灞炴€т俊鎭?
   if (cond.identifier === 'report') {
-    // 属性上报：从properties中查找
+    // 灞炴€т笂鎶ワ細浠巔roperties涓煡鎵?
     const property = state.properties?.find(p => p.identifier === param.identifier)
     dataTypeInfo = property?.dataType
   } else if (cond.type === 'event') {
-    // 事件：从events中查找
+    // 浜嬩欢锛氫粠events涓煡鎵?
     const event = state.events?.find(e => e.identifier === cond.identifier)
     const eventParam = event?.items?.find(p => p.identifier === param.identifier)
     dataTypeInfo = eventParam?.dataType
   } else if (cond.type === 'service') {
-    // 服务：从services中查找
+    // 鏈嶅姟锛氫粠services涓煡鎵?
     const service = state.services?.find(s => s.identifier === cond.identifier)
     const serviceParam = service?.items?.find(p => p.identifier === param.identifier)
     dataTypeInfo = serviceParam?.dataType
   }
 
-  // 处理物模型中的数据类型结构
+  // 澶勭悊鐗╂ā鍨嬩腑鐨勬暟鎹被鍨嬬粨鏋?
   if (!dataTypeInfo) return 'string'
 
-  // 如果dataType是对象且包含type字段，则使用type字段的值
+  // 濡傛灉dataType鏄璞′笖鍖呭惈type瀛楁锛屽垯浣跨敤type瀛楁鐨勫€?
   if (typeof dataTypeInfo === 'object' && dataTypeInfo.type) {
     const type = dataTypeInfo.type
-    // 标准化数据类型名称
+    // 鏍囧噯鍖栨暟鎹被鍨嬪悕绉?
     switch (type) {
       case 'int32':
       case 'int64':
@@ -539,23 +764,110 @@ const getPropertyDataType = (pk: string, cond: any, param: any) => {
         return 'enum'
       case 'array':
         return 'array'
+      case 'object':
+        return 'object'
       case 'struct':
-        return 'struct'
+        return 'object'
       default:
         return type
     }
   }
 
-  // 如果dataType是字符串，直接返回
   if (typeof dataTypeInfo === 'string') {
-    return dataTypeInfo
+    return mapTypeToUi(dataTypeInfo)
   }
 
   return 'string'
 }
 
+const isBooleanParam = (pk: string, cond: any, param: any) => {
+  if (!['==', '!='].includes(param?.comparator || '')) return false
+  const type = getPropertyDataType(pk, cond, param)
+  return ['bool', 'boolean'].includes(type)
+}
+
+const isDateParam = (pk: string, cond: any, param: any) => {
+  const type = getPropertyDataType(pk, cond, param)
+  return type === 'date' && !['between', 'notBetween'].includes(param?.comparator || '')
+}
+
+const isDateTimeParam = (pk: string, cond: any, param: any) => {
+  const type = getPropertyDataType(pk, cond, param)
+  return type === 'datetime' && !['between', 'notBetween'].includes(param?.comparator || '')
+}
+
+const isEnumParam = (pk: string, cond: any, param: any) => {
+  const type = getPropertyDataType(pk, cond, param)
+  return type === 'enum'
+}
+
+const getParamEnumOptions = (pk: string, cond: any, param: any) => {
+  const state = stateMap.value.get(pk)
+  if (!state) return []
+
+  let dataTypeInfo: any = null
+  if (cond.identifier === 'report') {
+    const property = state.properties?.find((p: any) => p.identifier === param.identifier)
+    dataTypeInfo = property?.dataType
+  } else if (cond.type === 'event') {
+    const event = state.events?.find((e: any) => e.identifier === cond.identifier)
+    const eventParam = event?.items?.find((p: any) => p.identifier === param.identifier)
+    dataTypeInfo = eventParam?.dataType
+  } else if (cond.type === 'service') {
+    const service = state.services?.find((s: any) => s.identifier === cond.identifier)
+    const serviceParam = service?.items?.find((p: any) => p.identifier === param.identifier)
+    dataTypeInfo = serviceParam?.dataType
+  }
+
+  const specs = dataTypeInfo?.specs
+  if (!specs || typeof specs !== 'object') return []
+  return Object.keys(specs).map((key) => ({
+    value: String(key),
+    label: String(specs[key] ?? key)
+  }))
+}
+
+const normalizeBooleanValue = (value: any) => {
+  const raw = String(value ?? '').trim().toLowerCase()
+  if (raw === 'true' || raw === '1') return '1'
+  if (raw === 'false' || raw === '0') return '0'
+  return raw
+}
+
+const getParamBooleanOptions = (pk: string, cond: any, param: any) => {
+  const state = stateMap.value.get(pk)
+  if (!state) {
+    return [
+      { value: '0', label: '0（关闭/否）' },
+      { value: '1', label: '1（开启/是）' }
+    ]
+  }
+
+  let dataTypeInfo: any = null
+  if (cond.identifier === 'report') {
+    const property = state.properties?.find((p: any) => p.identifier === param.identifier)
+    dataTypeInfo = property?.dataType
+  } else if (cond.type === 'event') {
+    const event = state.events?.find((e: any) => e.identifier === cond.identifier)
+    const eventParam = event?.items?.find((p: any) => p.identifier === param.identifier)
+    dataTypeInfo = eventParam?.dataType
+  } else if (cond.type === 'service') {
+    const service = state.services?.find((s: any) => s.identifier === cond.identifier)
+    const serviceParam = service?.items?.find((p: any) => p.identifier === param.identifier)
+    dataTypeInfo = serviceParam?.dataType
+  }
+
+  const specs = dataTypeInfo?.specs || {}
+  const label0 = String(specs?.[0] ?? specs?.['0'] ?? '关闭/否')
+  const label1 = String(specs?.[1] ?? specs?.['1'] ?? '开启/是')
+  return [
+    { value: '0', label: `0（${label0}）` },
+    { value: '1', label: `1（${label1}）` }
+  ]
+}
+
 const conditionChange = (cond, list, e) => {
-  // 清空之前的参数
+  // 娓呯┖涔嬪墠鐨勫弬鏁?
   cond.parameters = []
 
   for (let i in list) {
@@ -564,7 +876,7 @@ const conditionChange = (cond, list, e) => {
       if (item.identifier === e) {
         cond.type = item.type || ''
 
-        // 如果是事件、服务或属性上报类型，且不是通配符，自动添加一个参数
+        // 濡傛灉鏄簨浠躲€佹湇鍔℃垨灞炴€т笂鎶ョ被鍨嬶紝涓斾笉鏄€氶厤绗︼紝鑷姩娣诲姞涓€涓弬鏁?
         if ((item.type === 'event' || item.type === 'service' || e === 'report') && !e.endsWith(':*')) {
           cond.parameters = [{}]
         }
@@ -574,74 +886,49 @@ const conditionChange = (cond, list, e) => {
   }
 }
 
-// 获取参数值输入提示
+// 鑾峰彇鍙傛暟鍊艰緭鍏ユ彁绀?
 const getValuePlaceholder = (comparator, pk?: string, cond?: any, param?: any) => {
-  if (!comparator) return '请输入值'
-
-  // 获取属性数据类型以提供更精确的提示
+  if (!comparator) return '请输入比较值'
   const dataType = pk && cond && param ? getPropertyDataType(pk, cond, param) : 'string'
-
-  switch (comparator) {
-    case 'between':
-    case 'notBetween':
-      if (['int', 'float', 'double', 'long'].includes(dataType)) {
-        return '请输入数值范围，格式: 最小值-最大值 (如: 10-20)'
-      }
-      return '请输入范围值，格式: 最小值-最大值 (如: 10-20)'
-    case 'contain':
-    case 'notContain':
-      return '请输入要匹配的文本内容'
-    case '>':
-    case '<':
-    case '>=':
-    case '<=':
-      if (['int', 'float', 'double', 'long'].includes(dataType)) {
-        return '请输入数值 (如: 100)'
-      }
-      return '请输入数值'
-    case '==':
-    case '!=':
-      switch (dataType) {
-        case 'bool':
-        case 'boolean':
-          return '请输入true或false'
-        case 'int':
-        case 'long':
-          return '请输入整数 (如: 100)'
-        case 'float':
-        case 'double':
-          return '请输入数值 (如: 100.5)'
-        case 'enum':
-          return '请输入枚举值'
-        default:
-          return '请输入比较值'
-      }
-    default:
-      return '请输入值'
+  if (['between', 'notBetween'].includes(comparator)) {
+    return '请输入范围，格式：最小值-最大值'
   }
+  if (['contain', 'notContain'].includes(comparator)) {
+    return ['array', 'object', 'struct'].includes(dataType)
+      ? '请输入关键字（建议配合子字段路径）'
+      : '请输入要匹配的文本'
+  }
+  if (['>', '<', '>=', '<='].includes(comparator)) {
+    return '请输入数值'
+  }
+  if (dataType === 'enum') return '请选择枚举值'
+  if (['bool', 'boolean'].includes(dataType)) return '请选择布尔值（系统统一存储 0/1）'
+  if (dataType === 'date') return '请选择日期'
+  if (dataType === 'datetime') return '请选择日期时间'
+  return '请输入比较值'
 }
 
-// 比较器变化处理
+// 姣旇緝鍣ㄥ彉鍖栧鐞?
 const onComparatorChange = (param) => {
   if (!param) return
-  // 清空之前的值，避免格式不匹配
+  // 娓呯┖涔嬪墠鐨勫€硷紝閬垮厤鏍煎紡涓嶅尮閰?
   param.value = ''
 }
 
-// 验证参数值
+// 楠岃瘉鍙傛暟鍊?
 const validateParamValue = (param, pk?: string, cond?: any) => {
   if (!param || !param.value || !param.comparator) return true
 
   const { comparator, value } = param
 
-  // 获取属性数据类型
+  // 鑾峰彇灞炴€ф暟鎹被鍨?
   const dataType = pk && cond ? getPropertyDataType(pk, cond, param) : 'string'
 
-  // 验证between和notBetween格式
+  // 楠岃瘉between鍜宯otBetween鏍煎紡
   if (comparator === 'between' || comparator === 'notBetween') {
     const parts = value.split('-')
     if (parts.length !== 2) {
-      ElMessage.warning('范围值格式错误，请使用格式: 最小值-最大值 (如: 10-20)')
+      ElMessage.warning('范围值格式错误，请使用：最小值-最大值（例如 10-20）')
       return false
     }
 
@@ -659,22 +946,22 @@ const validateParamValue = (param, pk?: string, cond?: any) => {
     }
   }
 
-  // 验证数值类型操作符
+  // 楠岃瘉鏁板€肩被鍨嬫搷浣滅
   if (['>', '<', '>=', '<='].includes(comparator)) {
     if (isNaN(parseFloat(value))) {
-      ElMessage.warning('该操作符需要输入数值')
+      ElMessage.warning('该比较符需要输入数值')
       return false
     }
   }
 
-  // 根据数据类型验证值
+  // 鏍规嵁鏁版嵁绫诲瀷楠岃瘉鍊?
   switch (dataType) {
     case 'int':
     case 'long':
       if (!['between', 'notBetween'].includes(comparator)) {
         const intValue = parseInt(value)
         if (isNaN(intValue) || intValue.toString() !== value.trim()) {
-          ElMessage.warning('请输入有效的整数')
+          ElMessage.warning('请输入有效整数')
           return false
         }
       }
@@ -684,16 +971,16 @@ const validateParamValue = (param, pk?: string, cond?: any) => {
       if (!['between', 'notBetween'].includes(comparator)) {
         const floatValue = parseFloat(value)
         if (isNaN(floatValue)) {
-          ElMessage.warning('请输入有效的数值')
+          ElMessage.warning('请输入有效数字')
           return false
         }
       }
       break
     case 'bool':
     case 'boolean':
-      const boolValue = value.toLowerCase().trim()
-      if (!['true', 'false', '1', '0'].includes(boolValue)) {
-        ElMessage.warning('布尔值只能是true、false、1或0')
+      const boolValue = normalizeBooleanValue(value)
+      if (!['1', '0'].includes(boolValue)) {
+        ElMessage.warning('布尔值只允许 0 或 1（系统统一存储）')
         return false
       }
       break
@@ -702,7 +989,7 @@ const validateParamValue = (param, pk?: string, cond?: any) => {
   return true
 }
 
-// 验证所有监听器配置
+// 楠岃瘉鎵€鏈夌洃鍚櫒閰嶇疆
 const validateAllListeners = () => {
   for (const listener of list.value) {
     if (!listener.conditions || listener.conditions.length === 0) {
@@ -712,7 +999,7 @@ const validateAllListeners = () => {
 
     for (const condition of listener.conditions) {
       if (!condition.identifier) {
-        ElMessage.error('请选择监听条件类型')
+        ElMessage.error('请选择监听类型')
         return false
       }
 
@@ -733,7 +1020,7 @@ const validateAllListeners = () => {
             return false
           }
 
-          // 调用单个参数验证
+          // 璋冪敤鍗曚釜鍙傛暟楠岃瘉
           if (!validateParamValue(param)) {
             return false
           }
@@ -745,12 +1032,12 @@ const validateAllListeners = () => {
   return true
 }
 
-// 暴露验证方法给父组件
+// 鏆撮湶楠岃瘉鏂规硶缁欑埗缁勪欢
 defineExpose({
   validateAllListeners
 })
 
-// 新增条件
+// 鏂板鏉′欢
 const handleAddCondition = (item: any) => {
   if (!item.conditions) item.conditions = []
   item.conditions.push({
@@ -759,12 +1046,12 @@ const handleAddCondition = (item: any) => {
     parameters: []
   })
 }
-// 删除条件
+// 鍒犻櫎鏉′欢
 const handleRemoveCondition = (item: any, index: number) => {
   item.conditions.splice(index, 1)
 }
 
-// 新增参数
+// 鏂板鍙傛暟
 const addParmeter = (cond: any) => {
   if (!cond.parameters) cond.parameters = []
   cond.parameters.push({
@@ -773,63 +1060,11 @@ const addParmeter = (cond: any) => {
     value: ''
   })
 }
-// 删除参数
+// 鍒犻櫎鍙傛暟
 const removeParmeter = (index: number, cond: any) => {
   cond.parameters.splice(index, 1)
 }
 
-// 表达式预览和测试功能
-const previewExpression = (param) => {
-  if (!param || !param.comparator || !param.value) {
-    return '请完善条件配置'
-  }
-
-  const { comparator, value, identifier } = param
-  const field = identifier || '设备属性'
-
-  try {
-    switch (comparator) {
-      case '==':
-        return `当 ${field} 等于 "${value}" 时触发`
-      case '!=':
-        return `当 ${field} 不等于 "${value}" 时触发`
-      case '>':
-        return `当 ${field} 大于 ${value} 时触发`
-      case '<':
-        return `当 ${field} 小于 ${value} 时触发`
-      case '>=':
-        return `当 ${field} 大于等于 ${value} 时触发`
-      case '<=':
-        return `当 ${field} 小于等于 ${value} 时触发`
-      case 'between':
-        if (value && value.includes('-')) {
-          const [min, max] = value.split('-')
-          return `当 ${field} 在 ${min} 到 ${max} 之间时触发`
-        }
-        return `当 ${field} 在指定范围内时触发`
-      case 'notBetween':
-        if (value && value.includes('-')) {
-          const [min2, max2] = value.split('-')
-          return `当 ${field} 不在 ${min2} 到 ${max2} 之间时触发`
-        }
-        return `当 ${field} 不在指定范围内时触发`
-      case 'contain':
-        return `当 ${field} 包含 "${value}" 时触发`
-      case 'notContain':
-        return `当 ${field} 不包含 "${value}" 时触发`
-      default:
-        return '未知条件类型'
-    }
-  } catch (error) {
-    console.error('表达式预览错误:', error)
-    return '表达式格式错误'
-  }
-}
-
-onUnmounted(() => {
-  console.log('onUnmounted')
-  list.value = []
-})
 </script>
 
 <style lang="scss" scoped>
@@ -903,3 +1138,4 @@ onUnmounted(() => {
   }
 }
 </style>
+

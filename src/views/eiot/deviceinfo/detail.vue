@@ -479,11 +479,89 @@
         <el-form-item
           v-for="param in state.serviceForm.params"
           :key="param.identifier"
-          :label="param.identifier"
+          :label="`${param.name || param.identifier} (${param.identifier})`"
           prop="params"
         >
-          <el-input v-model="param.value" auto-complete="off" />
-          <div class="form-tips">{{ param.name }}</div>
+          <el-select
+            v-if="isServiceBoolParam(param)"
+            v-model="param.value"
+            placeholder="选择布尔值"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="opt in getServiceBoolOptions(param)"
+              :key="String(opt.value)"
+              :label="opt.label"
+              :value="String(opt.value)"
+            />
+          </el-select>
+          <el-select
+            v-else-if="isServiceEnumParam(param)"
+            v-model="param.value"
+            placeholder="选择枚举值"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="opt in getServiceEnumOptions(param)"
+              :key="String(opt.value)"
+              :label="opt.label"
+              :value="String(opt.value)"
+            />
+          </el-select>
+          <el-date-picker
+            v-else-if="isServiceDateParam(param)"
+            v-model="param.value"
+            type="date"
+            value-format="YYYY-MM-DD"
+            format="YYYY-MM-DD"
+            placeholder="选择日期"
+            style="width: 100%"
+          />
+          <el-date-picker
+            v-else-if="isServiceDateTimeParam(param)"
+            v-model="param.value"
+            type="datetime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            format="YYYY-MM-DD HH:mm:ss"
+            placeholder="选择日期时间"
+            style="width: 100%"
+          />
+          <el-input
+            v-else-if="isServiceComplexParam(param)"
+            v-model="param.value"
+            type="textarea"
+            :rows="4"
+            :placeholder="getServiceInputPlaceholder(param)"
+            auto-complete="off"
+          />
+          <div v-if="isServiceComplexParam(param)" class="service-param-helper">
+            <el-button link type="primary" @click="fillServiceParamExample(param)">填充示例</el-button>
+            <el-button link type="primary" @click="formatServiceParamJson(param)">格式化 JSON</el-button>
+          </div>
+          <div v-if="isServiceComplexParam(param)" class="service-param-example">
+            字段路径：{{ getServiceParamFieldPathText(param) }}
+          </div>
+          <div v-if="isServiceComplexParam(param)" class="service-param-example">
+            示例：{{ getServiceParamCompactExample(param) }}
+          </div>
+          <el-input
+            v-else
+            v-model="param.value"
+            :placeholder="getServiceInputPlaceholder(param)"
+            auto-complete="off"
+          />
+          <div v-if="isServicePositionParam(param)" class="service-param-helper">
+            <el-button link type="primary" @click="fillServiceParamExample(param)">填充示例</el-button>
+          </div>
+          <div v-if="isServicePositionParam(param)" class="service-param-example">
+            示例：31.2304,121.4737（纬度,经度）
+          </div>
+          <div class="form-tips">
+            类型: {{ param?.dataType?.type || 'string' }}
+            <span v-if="param.required"> | 必填</span>
+            <span v-if="param.description"> | {{ param.description }}</span>
+            <span> | {{ getServiceParamGuideText(param) }}</span>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -1053,21 +1131,219 @@ const showInvokeService = (service) => {
   state.serviceForm.identifier = service.identifier
   state.serviceForm.deviceId = state.deviceDetail.id
   let params: any[] = []
-  service.inputData.forEach((p) => {
+  ;(service.inputData || []).forEach((p) => {
     params.push({
       identifier: p.identifier,
       name: p.name,
-      value: ''
+      value: '',
+      dataType: p.dataType || { type: 'string' },
+      required: !!p.required,
+      description: p.description || ''
     })
   })
   state.serviceForm.params = params
 }
+const getServiceParamType = (param: any) => {
+  const t = String(param?.dataType?.type || 'string').toLowerCase()
+  if (t === 'boolean') return 'bool'
+  if (t === 'struct') return 'object'
+  return t
+}
+const isServiceBoolParam = (param: any) => getServiceParamType(param) === 'bool'
+const isServiceEnumParam = (param: any) => getServiceParamType(param) === 'enum'
+const isServiceDateParam = (param: any) => getServiceParamType(param) === 'date'
+const isServiceDateTimeParam = (param: any) => getServiceParamType(param) === 'datetime'
+const isServicePositionParam = (param: any) => getServiceParamType(param) === 'position'
+const isServiceComplexParam = (param: any) => ['array', 'object'].includes(getServiceParamType(param))
+const getServiceEnumOptions = (param: any) => {
+  const specs = param?.dataType?.specs
+  if (!specs || typeof specs !== 'object') return []
+  return Object.keys(specs).map((key) => ({ value: String(key), label: `${String(specs[key])} (${key})` }))
+}
+const getServiceBoolOptions = (param: any) => {
+  const specs = param?.dataType?.specs
+  if (specs && typeof specs === 'object') {
+    return [
+      { value: '0', label: `${String(specs['0'] ?? '0')} (存储:0)` },
+      { value: '1', label: `${String(specs['1'] ?? '1')} (存储:1)` }
+    ]
+  }
+  return [
+    { value: '0', label: '0 (存储:0)' },
+    { value: '1', label: '1 (存储:1)' }
+  ]
+}
+const getServiceInputPlaceholder = (param: any) => {
+  const type = getServiceParamType(param)
+  if (type === 'array' || type === 'object') return '点击“填充示例”后按字段修改'
+  if (type === 'position') return '纬度,经度，例如 31.2304,121.4737'
+  if (type === 'date') return 'YYYY-MM-DD'
+  if (type === 'datetime') return 'YYYY-MM-DD HH:mm:ss'
+  if (['int32', 'int64', 'float', 'double'].includes(type)) return '请输入数值'
+  return '请输入参数值'
+}
+const getServiceParamGuideText = (param: any) => {
+  const type = getServiceParamType(param)
+  if (type === 'bool') return '系统统一存储 0/1，这里是值映射输入'
+  if (type === 'enum') return '按选项值提交'
+  if (type === 'array' || type === 'object') return '建议先点“填充示例”，再按字段路径修改'
+  if (type === 'position') return '格式：纬度,经度'
+  if (type === 'date') return '格式: YYYY-MM-DD'
+  if (type === 'datetime') return '格式: YYYY-MM-DD HH:mm:ss'
+  return '按对应类型输入'
+}
+const getServiceParamPlaceholder = (param: any) => {
+  const type = getServiceParamType(param)
+  if (type === 'array' || type === 'object') return '请输入 JSON'
+  if (type === 'date') return 'YYYY-MM-DD'
+  if (type === 'datetime') return 'YYYY-MM-DD HH:mm:ss'
+  if (['int32', 'int64', 'float', 'double'].includes(type)) return '请输入数字'
+  return '请输入参数值'
+}
+const parseServiceParamValue = (param: any) => {
+  const raw = param?.value
+  const type = getServiceParamType(param)
+  if (raw === '' || raw === undefined || raw === null) return null
+  switch (type) {
+    case 'bool':
+      if (raw === true || raw === 'true' || raw === 1 || raw === '1') return 1
+      if (raw === false || raw === 'false' || raw === 0 || raw === '0') return 0
+      return null
+    case 'int32':
+    case 'int64': {
+      const n = Number(raw)
+      return Number.isInteger(n) ? n : null
+    }
+    case 'float':
+    case 'double': {
+      const n = Number(raw)
+      return Number.isNaN(n) ? null : n
+    }
+    case 'array':
+    case 'object':
+      try {
+        return typeof raw === 'string' ? JSON.parse(raw) : raw
+      } catch (e) {
+        return null
+      }
+    case 'position': {
+      const text = String(raw).trim()
+      if (!text.includes(',')) return null
+      const [lat, lon] = text.split(',').map((x: string) => x.trim())
+      if (lat === '' || lon === '') return null
+      if (Number.isNaN(Number(lat)) || Number.isNaN(Number(lon))) return null
+      return `${lat},${lon}`
+    }
+    case 'enum':
+      return String(raw)
+    default:
+      return raw
+  }
+}
+const buildServiceParamExampleByType = (dataType: any, depth = 0): any => {
+  const type = String(dataType?.type || 'string').toLowerCase()
+  if (depth > 4) return null
+  if (type === 'bool' || type === 'boolean') return 1
+  if (type === 'enum') {
+    const specs = dataType?.specs || {}
+    const firstKey = Object.keys(specs)[0]
+    return firstKey !== undefined ? String(firstKey) : '0'
+  }
+  if (type === 'int32' || type === 'int64') return 1
+  if (type === 'float' || type === 'double') return 1.23
+  if (type === 'date') return '2026-04-22'
+  if (type === 'datetime') return '2026-04-22 12:00:00'
+  if (type === 'position') return '31.2304,121.4737'
+  if (type === 'array') {
+    const itemType = dataType?.specs?.itemType || { type: 'string' }
+    return [buildServiceParamExampleByType(itemType, depth + 1)]
+  }
+  if (type === 'object' || type === 'struct') {
+    const props = dataType?.specs?.properties || []
+    const obj: any = {}
+    props.forEach((p: any) => {
+      if (!p?.identifier) return
+      obj[p.identifier] = buildServiceParamExampleByType(p.dataType || { type: 'string' }, depth + 1)
+    })
+    return obj
+  }
+  if (type === 'text') return '示例长文本'
+  return '示例值'
+}
+const getServiceParamCompactExample = (param: any) => {
+  const example = buildServiceParamExampleByType(param?.dataType || { type: 'string' })
+  if (typeof example === 'string') return example
+  try {
+    return JSON.stringify(example)
+  } catch (e) {
+    return String(example)
+  }
+}
+const fillServiceParamExample = (param: any) => {
+  const example = buildServiceParamExampleByType(param?.dataType || { type: 'string' })
+  if (typeof example === 'string') {
+    param.value = example
+    return
+  }
+  param.value = JSON.stringify(example, null, 2)
+}
+const formatServiceParamJson = (param: any) => {
+  if (!isServiceComplexParam(param)) return
+  try {
+    const parsed = typeof param.value === 'string' ? JSON.parse(param.value) : param.value
+    param.value = JSON.stringify(parsed, null, 2)
+  } catch (e) {
+    ElMessage({
+      type: 'warning',
+      message: `${param.name || param.identifier} 不是合法 JSON`
+    })
+  }
+}
+const collectServiceParamFieldPaths = (dataType: any, prefix = ''): string[] => {
+  const type = String(dataType?.type || 'string').toLowerCase()
+  if (type === 'object' || type === 'struct') {
+    const props = dataType?.specs?.properties || []
+    const out: string[] = []
+    props.forEach((p: any) => {
+      if (!p?.identifier) return
+      const path = prefix ? `${prefix}.${p.identifier}` : p.identifier
+      out.push(path)
+      out.push(...collectServiceParamFieldPaths(p.dataType || { type: 'string' }, path))
+    })
+    return out
+  }
+  if (type === 'array') {
+    const path = prefix ? `${prefix}[*]` : '[*]'
+    return [path, ...collectServiceParamFieldPaths(dataType?.specs?.itemType || { type: 'string' }, path)]
+  }
+  return []
+}
+const getServiceParamFieldPathText = (param: any) => {
+  const paths = collectServiceParamFieldPaths(param?.dataType || { type: 'string' })
+  if (!paths.length) return '无子字段'
+  return paths.slice(0, 8).join('，')
+}
 const submitServiceForm = () => {
   let form = state.serviceForm
   let param = {}
-  state.serviceForm.params.forEach((p) => {
-    param[p.identifier] = p.value
-  })
+  for (const p of state.serviceForm.params) {
+    const parsed = parseServiceParamValue(p)
+    if (p.required && (parsed === null || parsed === '')) {
+      ElMessage({
+        type: 'warning',
+        message: `参数 ${p.name || p.identifier} 为必填`
+      })
+      return
+    }
+    if (p.value !== '' && p.value !== undefined && p.value !== null && parsed === null) {
+      ElMessage({
+        type: 'warning',
+        message: `参数 ${p.name || p.identifier} 格式不正确`
+      })
+      return
+    }
+    param[p.identifier] = parsed
+  }
 
   serviceInvoke({
     deviceId: state.deviceId,
@@ -1095,6 +1371,7 @@ const sendDeviceMsg = (fun) => {
     let val = fun.value
     switch (fun.dataTypeName) {
       case 'int32':
+      case 'int64':
         val = parseInt(val, 10)
         if (isNaN(val) || val < Number(fun.raw.dataType.specs.min) || val > Number(fun.raw.dataType.specs.max)) {
           ElMessage({
@@ -1117,11 +1394,24 @@ const sendDeviceMsg = (fun) => {
         }
         break
       case 'float':
+      case 'double':
         val = parseFloat(val)
         if (isNaN(val)) {
           ElMessage({
             type: 'error',
             message: '请输入有效的浮点数'
+          })
+          return
+        }
+        break
+      case 'array':
+      case 'object':
+        try {
+          val = JSON.parse(val)
+        } catch (error) {
+          ElMessage({
+            type: 'error',
+            message: '璇疯緭鍏ユ湁鏁堢殑 JSON'
           })
           return
         }
@@ -1350,6 +1640,17 @@ logSearch()
 .form-tips {
   font-size: 12px;
   line-height: 14px;
+}
+.service-param-helper {
+  margin-top: 4px;
+  line-height: 18px;
+}
+.service-param-example {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #606266;
+  word-break: break-all;
 }
 .equipment-param {
   max-height: 160px;
