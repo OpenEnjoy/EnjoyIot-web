@@ -476,9 +476,7 @@ const getData = () => {
   if (props.deviceId) {
     queryParams.deviceId = props.deviceId
   }
-  if (props.productId) {
-    queryParams.productId = props.productId
-  }
+  queryParams.productKey = productKey.value
 
   getDeviceAlertConfigPage(queryParams)
     .then((res) => {
@@ -625,8 +623,9 @@ const handleStatusChange = (row: any) => {
 }
 
 onMounted(async () => {
-  getData()
   await loadProductProperties()
+  getData()
+
 })
 </script>
 
