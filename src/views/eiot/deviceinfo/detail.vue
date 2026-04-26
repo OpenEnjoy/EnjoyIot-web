@@ -639,9 +639,12 @@ import PropertyTable from './modules/PropertyTable.vue'
 import PropertyChart from './modules/PropertyChart.vue'
 
 import productList from './product-list.vue'
+import Map from '@/components/LeafletMap/index.vue'
 const message = useMessage() // 消息弹窗
 import DeviceSimulator from './modules/detail/DeviceSimulator.vue'
 import SubEquipment from "./modules/detail/subEquipment.vue";
+import DeviceAlertConfig from '@/views/eiot/devicealert/config.vue'
+import { getDeviceAlertRecordListByDevice, DeviceAlertRecordVO } from '@/api/eiot/devicealert/devicealert.api'
 import { ref } from 'vue'
 import request from '@/config/axios'
 

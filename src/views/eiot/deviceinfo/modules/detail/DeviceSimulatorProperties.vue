@@ -54,17 +54,10 @@ export default {
         deviceId: this.deviceId,
         args: prop,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
       })
     },
 
@@ -75,17 +68,10 @@ export default {
         deviceId: this.deviceId,
         propertyNames: prop,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
       })
     },
     sendAllPropertiesGet() {
@@ -98,17 +84,10 @@ export default {
         deviceId: this.deviceId,
         propertyNames: prop,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
       })
     },
     sendSimpleThingModelMsg(fun) {
@@ -153,17 +132,10 @@ export default {
         identifier: fun.type == 'property' ? 'report' : fun.identifier,
         data: data,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
       })
     },
     sendThingModelMsg() {
@@ -205,17 +177,10 @@ export default {
         identifier: 'report',
         data: data,
       }).then((res) => {
-        if (res.code === 200) {
           ElMessage({
             type: 'success',
             message: '操作成功',
           })
-        } else {
-          ElMessage({
-            type: 'error',
-            message: res.message,
-          })
-        }
       })
     },
   },
