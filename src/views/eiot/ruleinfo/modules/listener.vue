@@ -75,8 +75,9 @@
                               :options="getServicePathTree(item.pk, cond.identifier)"
                               placeholder="选择服务输出字段路径（逐层展开）"
                             />
+
                           </el-col>
-                          <el-col :span="6">
+                          <el-col :span="6" v-if="param.identifier && param.identifier !== '*' && !param.identifier.endsWith(':*')">
                             <el-select v-model="param.comparator" @change="onComparatorChange(param)" placeholder="选择比较方式">
                               <el-option
                                 v-for="cp in getAvailableComparators(item.pk, cond, param)"
@@ -91,7 +92,7 @@
                               </el-option>
                             </el-select>
                           </el-col>
-                          <el-col :span="5">
+                          <el-col :span="5" v-if="param.identifier && param.identifier !== '*' && !param.identifier.endsWith(':*')">
                             <el-select
                               v-if="isBooleanParam(item.pk, cond, param)"
                               v-model="param.value"
@@ -183,7 +184,6 @@
 </template>
 <script lang="ts" setup>
 import { propTypes } from '@/utils/propTypes'
-import { generateUUID } from '@/utils'
 
 import SelectProduct from '@/components/EiotSelect/select-product.vue'
 import SelectDevice from '@/components/EiotSelect/select-device.vue'
@@ -573,6 +573,21 @@ watch(
     deep: true,
   }
 )
+
+watch(
+  () => props.listeners,
+  (listeners) => {
+    if (!listeners || !Array.isArray(listeners)) return
+    listeners.forEach((listener) => {
+      if (listener.pk && !stateMap.value.has(listener.pk)) {
+        getProductObjectModel(listener.pk)
+      }
+    })
+  },
+  {
+    immediate: true,
+  }
+)
 // 鏂板鐩戝惉鍣?
 const handleAdd = () => {
   list.value.push({
@@ -867,7 +882,6 @@ const getParamBooleanOptions = (pk: string, cond: any, param: any) => {
 }
 
 const conditionChange = (cond, list, e) => {
-  // 娓呯┖涔嬪墠鐨勫弬鏁?
   cond.parameters = []
 
   for (let i in list) {
@@ -876,7 +890,6 @@ const conditionChange = (cond, list, e) => {
       if (item.identifier === e) {
         cond.type = item.type || ''
 
-        // 濡傛灉鏄簨浠躲€佹湇鍔℃垨灞炴€т笂鎶ョ被鍨嬶紝涓斾笉鏄€氶厤绗︼紝鑷姩娣诲姞涓€涓弬鏁?
         if ((item.type === 'event' || item.type === 'service' || e === 'report') && !e.endsWith(':*')) {
           cond.parameters = [{}]
         }
@@ -1010,19 +1023,20 @@ const validateAllListeners = () => {
 
       if (condition.parameters) {
         for (const param of condition.parameters) {
-          if (!param.comparator) {
-            ElMessage.error('请选择比较操作符')
-            return false
-          }
+          if (param.identifier && !param.identifier.endsWith(':*')) {
+            if (!param.comparator) {
+              ElMessage.error('请选择比较操作符')
+              return false
+            }
 
-          if (!param.value) {
-            ElMessage.error('请输入比较值')
-            return false
-          }
+            if (param.value === undefined || param.value === null || param.value === '') {
+              ElMessage.error('请输入比较值')
+              return false
+            }
 
-          // 璋冪敤鍗曚釜鍙傛暟楠岃瘉
-          if (!validateParamValue(param)) {
-            return false
+            if (!validateParamValue(param)) {
+              return false
+            }
           }
         }
       }

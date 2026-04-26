@@ -86,11 +86,17 @@ const stripUiField = (raw: any) => {
   return rest
 }
 const dataList = ref<any[]>([])
+const isUpdatingFromProps = ref(false)
 
 watch(
   () => props.list,
   (val) => {
+    isUpdatingFromProps.value = true
     dataList.value = (val || []).map((item: any) => normalizeOutputItem(item))
+    // 下一帧重置标志,确保 emit 不会被阻止
+    nextTick(() => {
+      isUpdatingFromProps.value = false
+    })
   },
   { deep: true, immediate: true }
 )
@@ -98,6 +104,8 @@ watch(
 watch(
   dataList,
   (val) => {
+    // 如果是从 props 更新过来的,跳过 emit,避免循环
+    if (isUpdatingFromProps.value) return
     emits('update:list', (val || []).map((item: any) => stripUiField(item)))
   },
   { deep: true }
