@@ -225,17 +225,8 @@ export const clearDeviceGroup = async (data: string) => {
   })
 }
 
-// 清空组下所有设备
-export const addDevicesGroup = async (data: string) => {
-  return await request.post({
-    url: Api.deviceGroupsClear,
-
-    data,
-  })
-}
-
 // 添加设备到组
-export const addDeviceToDeviceGroup = async (data) => {
+export const addDevicesGroup = async (data: { groupId: string; deviceIds: string[] }) => {
   return await request.post({
     url: Api.deviceGroupsAddDevices,
 

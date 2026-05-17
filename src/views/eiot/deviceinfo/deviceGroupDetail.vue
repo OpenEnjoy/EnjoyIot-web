@@ -165,9 +165,9 @@ const removeFromGroup = (deviceId: string) => {
 const onDelete = async (row: any) => {
   state.loading = true
   if (row instanceof Array) {
-    await removeDeviceFromDeviceGroup({group: id, deviceIds: row.map((m) => m.id)})
+    await removeDeviceFromDeviceGroup({groupId: id, deviceIds: row.map((m) => m.id)})
   } else {
-    await removeDeviceFromDeviceGroup({group: id, deviceIds: [row.id]})
+    await removeDeviceFromDeviceGroup({groupId: id, deviceIds: [row.id]})
   }
   ElMessage.success('退组成功!')
   state.loading = false

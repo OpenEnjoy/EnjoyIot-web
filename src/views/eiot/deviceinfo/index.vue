@@ -693,15 +693,15 @@ const handleToGroup = () => {
 
 // 添加设备到组
 const handleAddDeviceToDeviceGroup = () => {
-  // addDeviceToDeviceGroup({ group: state.toGroupId, devices: multipleSelection.value.map((m) => m.deviceId) }).then((res) => {
-  //   if (res.code == 200) {
-  //     ElMessage.success('添加成功!')
-  //     state.showDeviceToGroup = false
-  //     getData()
-  //   } else {
-  //     ElMessage.error(res.msg)
-  //   }
-  // })
+  addDevicesGroup({ groupId: state.toGroupId, deviceIds: multipleSelection.value.map((m) => m.deviceId) }).then((res) => {
+    if (res.code == 200) {
+      ElMessage.success('添加成功!')
+      state.showDeviceToGroup = false
+      getData()
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
 }
 
 const handleUploadSuccess = (res) => {
