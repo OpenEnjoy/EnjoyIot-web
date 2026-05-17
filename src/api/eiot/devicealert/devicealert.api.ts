@@ -32,6 +32,7 @@ export interface DeviceAlertConfigVO {
   deviceId?: number
   level?: string
   conditions: ConditionVO[]
+  logic?: string
   triggerOptions?: TriggerOptionsVO
   status?: number
   remark?: string

@@ -514,7 +514,7 @@ const onAddCallback = async (data: any) => {
 const onEditCallback = async (data: any) => {
   currentEditId.value = data.id
   if (data.conditions && Array.isArray(data.conditions)) {
-    tempConditions.logic = 'AND'
+    tempConditions.logic = data.logic || 'AND'
     tempConditions.items = [...data.conditions]
   } else {
     tempConditions.logic = 'AND'
@@ -566,6 +566,7 @@ const onSave = ({ data: saveData, cancel }: any) => {
     ...saveData,
     conditions: tempConditions.items.length > 0 ? tempConditions.items : undefined,
     triggerOptions: triggerOptions,
+    logic: tempConditions.logic,
   }
 
   if (!saveData.id) {
