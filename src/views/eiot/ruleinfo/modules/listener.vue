@@ -518,8 +518,27 @@ const initThingModel = (pk, res) => {
       })
     })
   })
-  stateMap.value.set(pk, state)
-  handleEmits()
+ stateMap.value.set(pk, state)
+ // Populate cond.type for existing conditions so event/service cascaders render on edit
+ list.value.forEach((l) => {
+   if (l.pk === pk && l.conditions) {
+     l.conditions.forEach((cond) => {
+       if (!cond.type && cond.identifier) {
+          const groups = state.modelItems
+         if (groups) {
+            for (const g of groups) {
+              const found = g.items.find((i) => i.identifier === cond.identifier)
+              if (found) {
+                cond.type = found.type || ''
+                break
+              }
+            }
+          }
+        }
+      })
+    }
+  })
+ if (!syncingFromProps.value) handleEmits()
 }
 
 const getPropertyPathTree = (pk: string) => {
@@ -542,7 +561,7 @@ const handleEmits = () => {
     if (config.config) {
       config = JSON.parse(config.config || '{}')
     }
-    if (!stateMap.value.has(config.pk)) getProductObjectModel(config.pk)
+    // getProductObjectModel removed from handleEmits - now handled by watcher
     return {
       ...config,
     }
@@ -552,16 +571,22 @@ const handleEmits = () => {
 watch(
   () => props.listeners,
   (val) => {
-    syncingFromProps.value = true
-    list.value = Array.isArray(val) ? [...val] : []
-    nextTick(() => {
+   syncingFromProps.value = true
+    const arr = Array.isArray(val) ? [...val] : []
+    list.value = arr
+    // Load thing models so condition dropdowns populate on edit
+    arr.forEach((l) => {
+      if (l.type === 'device' && l.pk && !stateMap.value.has(l.pk)) {
+        getProductObjectModel(l.pk)
+      }
+    })
+   nextTick(() => {
       syncingFromProps.value = false
     })
   },
   {
-    immediate: true,
-    deep: true,
-  }
+   immediate: true,
+ }
 )
 watch(
   list,
@@ -574,20 +599,6 @@ watch(
   }
 )
 
-watch(
-  () => props.listeners,
-  (listeners) => {
-    if (!listeners || !Array.isArray(listeners)) return
-    listeners.forEach((listener) => {
-      if (listener.pk && !stateMap.value.has(listener.pk)) {
-        getProductObjectModel(listener.pk)
-      }
-    })
-  },
-  {
-    immediate: true,
-  }
-)
 // 鏂板鐩戝惉鍣?
 const handleAdd = () => {
   list.value.push({

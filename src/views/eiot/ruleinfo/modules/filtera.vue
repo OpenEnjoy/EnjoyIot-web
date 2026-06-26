@@ -221,7 +221,7 @@ watch(
       syncingFromProps.value = false
     })
   },
-  { deep: true, immediate: true }
+  { immediate: true }
 )
 
 const hadnleSelectDevice = (device, row) => {
@@ -429,7 +429,7 @@ const initThingModel = (pk, res) => {
     modelItems,
     propertyTree,
   })
-  handleEmits()
+  if (!syncingFromProps.value) handleEmits()
 }
 
 const getPropertyPathTree = (item) => {
@@ -459,19 +459,20 @@ watch(
       })
     }
   },
-  { deep: true, immediate: true }
+  { immediate: true }
 )
 
 const handleEmits = () => {
   list.value.forEach((config: any) => {
-    if (config?.pk && !stateMap.value.has(config.pk)) getProductObjectModel(config.pk)
+    const effectivePk = config.pk || getPk(config)
+    if (effectivePk && !stateMap.value.has(effectivePk)) getProductObjectModel(effectivePk)
     if (config.cond === undefined) config.cond = 2
 
     // Ensure type is set for conditions
     if (config.conditions) {
       config.conditions.forEach((c: any) => {
-        if (!c.type && c.identifier && config.pk) {
-          const groups = stateMap.value.get(config.pk)?.modelItems
+        if (!c.type && c.identifier && effectivePk) {
+          const groups = stateMap.value.get(effectivePk)?.modelItems
           if (groups) {
             for (const g of groups) {
               const found = g.items.find((i: any) => i.identifier === c.identifier)

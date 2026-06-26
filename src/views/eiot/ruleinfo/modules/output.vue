@@ -98,7 +98,7 @@ watch(
       isUpdatingFromProps.value = false
     })
   },
-  { deep: true, immediate: true }
+  { immediate: true }
 )
 
 watch(
@@ -106,8 +106,8 @@ watch(
   (val) => {
     // 如果是从 props 更新过来的,跳过 emit,避免循环
     if (isUpdatingFromProps.value) return
-    emits('update:list', (val || []).map((item: any) => stripUiField(item)))
-  },
+   emits('update:list', (val || []).map((item: any) => stripUiField(item)))
+ },
   { deep: true }
 )
 // 新增输出

@@ -406,9 +406,10 @@ const getData = () => {
       ...item,
       triggerOptions: normalizeTriggerOptions(item.triggerOptions),
     }))
-    state.total = res.total
+      state.total = res.total
+      state.loading = false
   })
-  state.loading = false
+  // state.loading moved into .then() callback
 }
 const handleDelete = (row) => {
   state.loading = true
