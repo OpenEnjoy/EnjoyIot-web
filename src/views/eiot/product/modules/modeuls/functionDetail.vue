@@ -93,6 +93,7 @@ const state = reactive({
     script: [{ required: true, message: '脚本内容不能为空', trigger: 'blur' }],
   },
 })
+let prevAddIdentifier: string | null = null
 const rules = reactive({
   name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
   identifier: [{ required: true, message: '请输入标识符', trigger: 'blur' }],
@@ -130,6 +131,7 @@ const openDialog = (row?: any, prop?: any) => {
           _false: '',
         },
       },
+      prevAddIdentifier = null
     }
   }
   state.model = props.model
@@ -174,9 +176,12 @@ const saveThingModel = async () => {
       if (state.modelForm.type == 'property') {
         if (state.model.properties) {
           //删除旧的
-          const idx = state.model.properties.findIndex((p: any) => p.identifier == state.modelForm.raw.identifier)
-          if (idx >= 0) {
-            state.model.properties.splice(idx, 1)
+          const removeId = prevAddIdentifier || state.modelForm.raw.identifier
+          if (removeId) {
+            const idx = state.model.properties.findIndex((p: any) => p.identifier == removeId)
+            if (idx >= 0) {
+              state.model.properties.splice(idx, 1)
+            }
           }
         } else {
           state.model.properties = []
@@ -185,9 +190,12 @@ const saveThingModel = async () => {
       } else if (state.modelForm.type == 'service') {
         if (state.model.services) {
           //删除旧的
-          const idx = state.model.services.findIndex((p: any) => p.identifier == state.modelForm.raw.identifier)
-          if (idx >= 0) {
-            state.model.services.splice(idx, 1)
+          const removeId = prevAddIdentifier || state.modelForm.raw.identifier
+          if (removeId) {
+            const idx = state.model.services.findIndex((p: any) => p.identifier == removeId)
+            if (idx >= 0) {
+              state.model.services.splice(idx, 1)
+            }
           }
         } else {
           state.model.services = []
@@ -202,9 +210,12 @@ const saveThingModel = async () => {
       } else if (state.modelForm.type == 'event') {
         if (state.model.events) {
           //删除旧的
-          const idx = state.model.events.findIndex((p: any) => p.identifier == state.modelForm.raw.identifier)
-          if (idx >= 0) {
-            state.model.events.splice(idx, 1)
+          const removeId = prevAddIdentifier || state.modelForm.raw.identifier
+          if (removeId) {
+            const idx = state.model.events.findIndex((p: any) => p.identifier == removeId)
+            if (idx >= 0) {
+              state.model.events.splice(idx, 1)
+            }
           }
         } else {
           state.model.events = []
@@ -216,6 +227,7 @@ const saveThingModel = async () => {
           outputData: state.modelForm.raw.outputData,
         })
       }
+      prevAddIdentifier = state.modelForm.type == 'property' ? state.modelForm.raw.identifier : state.modelForm.identifier
     } else {
       if (state.modelForm.type == 'property') {
         let prop = newProperty()
