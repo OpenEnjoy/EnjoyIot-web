@@ -131,7 +131,6 @@ const openDialog = (row?: any, prop?: any) => {
           _false: '',
         },
       },
-      prevAddIdentifier = null
     }
   }
   state.model = props.model
